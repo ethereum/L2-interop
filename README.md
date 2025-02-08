@@ -1,6 +1,6 @@
-# L2 Interop
+# Ethereum-wide Interoperability
 
-Welcome to the L2 Interop repository under the Ethereum organization. This repository serves as the central hub for Ethereum-wide interoperability efforts, providing a single source of truth and collaboration space for all teams and contributors.
+Welcome to the L2 Interop repository under the Ethereum organization. This repository serves as the central hub for Ethereum-wide interoperability efforts, providing a single source of truth and collaboration space for all teams and contributors across the Ethereum ecosystem.
 
 ## Overview
 
