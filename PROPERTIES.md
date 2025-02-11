@@ -45,7 +45,6 @@ The ecosystem needs a standardized way to specify both an address and its associ
 2. **Integration Support**
 - Compatibility with name service resolution (ENS, etc)
 - Alignment with existing standards (DIDs, CAIP-10)
-- Support for both user-facing and programmatic formats
 
 3. **Security Characteristics**
 - Support for checksums and pre-validations
