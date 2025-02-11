@@ -30,7 +30,11 @@ The ecosystem needs a standardized way to specify both an address and its associ
 3. **User Interface**
 - Clear chain identification
 - Separation of concerns between human readability and machine addresses
-- Error prevention
+- Error prevention (e.g. reasonable length for manual validation)
+
+4. **Wallet Implementation Requirements**
+- Deterministic name resolution from machine address
+- Safe handling of malformed or invalid identifiers
 
 ### Should-have
 
