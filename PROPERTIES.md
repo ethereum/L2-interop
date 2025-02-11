@@ -57,6 +57,8 @@ The ecosystem needs a standardized way to specify both an address and its associ
 - Enforcing specific name resolution services
 - Standardizing chain identifiers (covered by other standards)
 
+For a comparison of current efforts, see [here](./docs/addresses-current-efforts.md).
+
 ## Message Passing
 
 [To be added]
