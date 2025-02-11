@@ -16,6 +16,21 @@ A core challenge in Ethereum's multichain landscape is disambiguating addresses 
 
 [ERC-7828](https://ethereum-magicians.org/t/erc-7828-chain-specific-addresses-using-ens/21930) builds on top of [ERC-7785](https://ethereum-magicians.org/t/erc-7785-onchain-registration-of-chain-identifiers/21299), to integrate with ENS, enabling the storage of chain names within an existing chain ID mapping and moving registrations away from centralized registries. Address formats could take the form of `alice@rollup` or `alice.rollup.eth`, which can be resolved on-chain through wallets.
 
+## Comparison
+
+The existing approaches to chain-specific addresses represent an evolution in thinking about cross-chain identification rather than competing solutions. Some standards builds upon lessons learned from previous implementations while other targets other aspects or they could built on top of.
+
+| **Feature** | ERC-3770 | CAIP-10 | ERC-7828 |
+| --- | --- | --- | --- |
+| **Format Example** | `chain:address` | `chain_id:chain_reference:address` | `address:chain.eth` or `address@chain.eth` |
+| **Human Readability** | Medium | Medium | High |
+| **Technical Compatibility** | EVM only (but extensible) | All chains | EVM focus with non-EVM support |
+| **Implementation Flexibility** | Limited | High | High |
+| **ENS Support** | “No” | “No” | Yes |
+| **DID Compatibility** | No | Yes | Optional |
+| **Checksum Support** | Yes | No | Yes |
+| **Relies on centralized lists** | Yes (referencing github.com/ethereum-lists/chains) | No | Yes (requires ERC-7785 aka onchain registry) |
+
 # Additional Considerations
 
 Unique chain identifiers rely on social consensus to avoid collisions that could break integrations. The transition from off-chain registries to on-chain methods in the Ethereum ecosystem has been widely discussed and documented [here](chain-registries.md).
