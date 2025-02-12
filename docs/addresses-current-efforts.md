@@ -27,7 +27,7 @@ The existing approaches to chain-specific addresses represent an evolution in th
 | **Technical Compatibility** | EVM only (but extensible) | All chains | EVM only (potential non-EVM support) |
 | **ENS Integration** | Optional | Optional | Required |
 | **DID Compatibility** | No | Yes | Optional |
-| **Checksum Support** | Yes | No | Yes |
+| **Checksum Support** | Incomplete (ERC-55 only) | No | Yes |
 | **Relies on centralized lists** | Yes (referencing github.com/ethereum-lists/chains) | No | Yes (requires ERC-7785 aka onchain registry) |
 
 # Additional Considerations
