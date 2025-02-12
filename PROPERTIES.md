@@ -33,7 +33,7 @@ The ecosystem needs a standardized way to specify both an address and its associ
 - Error prevention (e.g. reasonable length for manual validation)
 
 4. **Wallet Implementation Requirements**
-- Deterministic name resolution from machine address
+- Deterministic resolution from human-readable name to machine address
 - Safe handling of malformed or invalid identifiers
 - Support for checksums and pre-validations
 
@@ -51,6 +51,7 @@ The ecosystem needs a standardized way to specify both an address and its associ
 
 - Name resolution services standard
 - On-chain config registries
+- Deterministic resolution from machine address to human-readable name
 
 ### Non-Goals
 
