@@ -26,7 +26,7 @@ The existing approaches to chain-specific addresses represent an evolution in th
 | **Human Readability** | Medium | Medium | High |
 | **Technical Compatibility** | EVM only (but extensible) | All chains | EVM focus with non-EVM support |
 | **Implementation Flexibility** | Limited | High | High |
-| **ENS Support** | “No” | “No” | Yes |
+| **ENS Integration** | Optional | Optional | Required |
 | **DID Compatibility** | No | Yes | Optional |
 | **Checksum Support** | Yes | No | Yes |
 | **Relies on centralized lists** | Yes (referencing github.com/ethereum-lists/chains) | No | Yes (requires ERC-7785 aka onchain registry) |
