@@ -24,7 +24,7 @@ The existing approaches to chain-specific addresses represent an evolution in th
 | --- | --- | --- | --- |
 | **Format Example** | `chain:address` | `chain_namespace:chain_reference:address` | `address:chain.eth` or `address@chain.eth` |
 | **Human Readability** | Medium | Medium | High |
-| **Technical Compatibility** | EVM only (but extensible) | All chains | EVM focus with non-EVM support |
+| **Technical Compatibility** | EVM only (but extensible) | All chains | EVM only (potential non-EVM support) |
 | **Implementation Flexibility** | Limited | High | High |
 | **ENS Integration** | Optional | Optional | Required |
 | **DID Compatibility** | No | Yes | Optional |
