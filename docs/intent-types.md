@@ -11,3 +11,53 @@ Intents are also considered a proper solution to minimize the consequences of li
 [ERC-7683](https://github.com/ethereum/ERCs/blob/master/ERCS/erc-7683.md) proposes a standard API for cross-chain value-transfer systems. A participant called a filler fulfills intents in the destination initiated by users and is paid out through a settlement system. Users are protected since their funds are escrowed in the origin chain and are released when the action is verified, commonly through a message passed and validated.
 
 A CrossChainOrder is initiated (gasless or not gasless) and is resolved even when partitioned into several "legs." Note that the standard does not impose an opinion on the validation mechanism used to verify when an intent is completed.
+
+For a gasless cross-chain Flow:
+
+```mermaid
+---
+config:
+  theme: dark
+  fontSize: 48
+---
+
+sequenceDiagram
+    participant User
+    participant Filler
+    participant OriginSettler as IOriginSettler (Chain A)
+    participant DestinationSettler as IDestinationSettler (Chain B)
+
+    User-->Filler: sign GaslessCrossChainOrder (off-chain)
+    Filler->>OriginSettler: openFor(order, signature, originFillerData)
+    OriginSettler->>OriginSettler: emit Open(orderId, resolvedOrder)
+    Note over OriginSettler: Emits Open with fill instructions
+    Note over Filler: Bridging or messaging flow to <br/> relay fill data cross-chain
+
+    Filler->>DestinationSettler: fill(orderId, originData, fillerData)
+    DestinationSettler->>DestinationSettler: Validates & finalizes fill
+```
+
+For an on-chain cross-chain flow:
+
+```mermaid
+---
+config:
+  theme: dark
+  fontSize: 48
+---
+
+sequenceDiagram
+    participant User
+    participant OriginSettler as IOriginSettler (Chain A)
+    participant Filler
+    participant DestinationSettler as IDestinationSettler (Chain B)
+
+    User->>OriginSettler: open(order)
+    OriginSettler->>OriginSettler: emit Open(orderId, resolvedOrder)
+    Note over OriginSettler: Emits Open with fill instructions
+
+    Filler->>DestinationSettler: fill(orderId, originData, fillerData)
+    DestinationSettler->>DestinationSettler: Validates & finalizes fill
+```
+
+This standard intentionally does not prescribe the specifics of final settlement logic or how cancellations (e.g., revoking an unfilled order) should be handled. Implementations may choose to use any cross-chain messaging system.
