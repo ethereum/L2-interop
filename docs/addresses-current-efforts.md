@@ -23,7 +23,7 @@ The existing approaches to chain-specific addresses represent an evolution in th
 | **Feature** | ERC-3770 | CAIP-10 | ERC-7828 |
 | --- | --- | --- | --- |
 | **Format Example** | `chain:address` | `chain_namespace:chain_reference:address` | `address:chain.eth` or `address@chain.eth` |
-| **Human Readability** | Medium | Medium | High |
+| **Human Readability (_best-case scenario_)** | Medium | Medium | High |
 | **Technical Compatibility** | EVM only (but extensible) | All chains | EVM only (potential non-EVM support) |
 | **Implementation Flexibility** | Limited | High | High |
 | **ENS Integration** | Optional | Optional | Required |
