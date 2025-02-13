@@ -16,6 +16,14 @@ A core challenge in Ethereum's multichain landscape is disambiguating addresses 
 
 [ERC-7828](https://ethereum-magicians.org/t/erc-7828-chain-specific-addresses-using-ens/21930) builds on top of [ERC-7785](https://ethereum-magicians.org/t/erc-7785-onchain-registration-of-chain-identifiers/21299), to integrate with ENS, enabling the storage of chain names within an existing chain ID mapping and moving registrations away from centralized registries. Address formats could take the form of `alice@rollup` or `alice.rollup.eth`, which can be resolved on-chain through wallets.
 
+## ENSIP-9: Multichain Address Resolution
+
+[ENSIP-9](https://github.com/ensdomains/ensips/blob/master/ensips/9.md) introduces a unified way for ENS resolvers to store and return addresses for different blockchains by overloading the `addr` function. Rather than proposing a textual format like `chain:address`, ENSIP-9 leverage from coin types (following [SLIP-0044](https://github.com/satoshilabs/slips/blob/master/slip-0044.md)). This allows resolvers to identify each blockchain by its unique coin type and store the address in its native binary form (such as 20-byte hex for Ethereum, base58-decoded bytes for Bitcoin, etc).
+
+### ENSIP-11: EVM compatible Chain Address Resolution
+
+[ENSIP-11](https://github.com/ensdomains/ensips/blob/master/ensips/11.md) extends ENSIP-9 by introducing a dedicated range of coin types for EVM chains. This range prevents collision with existing [SLIP-0044](https://github.com/satoshilabs/slips/blob/master/slip-0044.md) coin types.
+
 ## Comparison
 
 The existing approaches to chain-specific addresses represent an evolution in thinking about cross-chain identification rather than competing solutions. Some standards builds upon lessons learned from previous implementations while other targets other aspects or they could built on top of.
