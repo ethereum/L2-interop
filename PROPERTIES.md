@@ -13,6 +13,12 @@ L2s and interconnected chains complicate how we identify accounts and targets fo
 * Same address on different chains representing completely different entities (or some of them do not "exist")
 * Different addresses across chains representing the same logical entity
 
+From the integration perspective, three layers of identification of accounts could be described as:
+
+- **Human-readable name**: A user-friendly identifier that can be resolved to a machine address (e.g., alice@rollup.eth).
+- **Machine-readable address**: The underlying technical representation that goes to an address (e.g., eth:rollup:0x123...abc).
+- **Raw address**: The address in its native format, readable by the underlying blockchain protocol (e.g., 0x123...abc).
+
 The ecosystem needs a standardized way to specify both an address and its associated chain. The following properties outline the requirements for solutions in this space.
 
 ### Must-have
