@@ -15,7 +15,27 @@ PreHTLC introduces three key improvements over [traditional HTLCs](https://en.bi
 
 This document does not exhaustively cover all [edge cases](https://docs.train.tech/protocol-spec/edge-cases) and [implementation details](https://docs.train.tech) but instead provides a high-level overview of the core process.  
 
-## Protocol Walkthrough  
+## Protocol Walkthrough
+
+```mermaid
+sequenceDiagram
+    participant P1 as User
+    participant SC as Source Chain
+    participant P2 as Solver
+    participant DC as Destination Chain
+
+
+    P1->>SC: commit()
+    SC-->>P2: TokenCommitted
+    P2->>DC: lock()
+    DC-->>P1: TokenLocked(hashlock)
+    P1->>SC: addLock(hashlock)
+    SC-->>P2: TokenLockAdded
+    P2->>SC: redeem(secret)
+    SC-->>P1: User Funds Recieved 
+    P2->>DC: redeem(secret)
+    DC-->>P2: Solver Funds Recieved
+```
 
 The following outlines the end-to-end execution when Alice transfers 1 ETH from Starknet to Optimism.  
 
@@ -49,7 +69,7 @@ At this stage, both chains (Starknet and Optimism) hold funds locked under the s
 
 ### 5. Secret disclosure and fund release
 
-- Bob monitors Starknet for confirmation that the commitment is locked in his favor with the expected `Hashlock`.  
+- Bob monitors Starknet for conf irmation that the commitment is locked in his favor with the expected `Hashlock`.  
 - Upon verification, Bob reveals the secret `S` on both chains, proving `HASH(S) = Hashlock`, thereby unlocking and claiming his funds while simultaneously releasing Alice's funds.  
 
 ## Conclusion  
