@@ -28,7 +28,7 @@ This document defines the common terminology and conventions to be used across a
 
 ## Intents
 
-- **`Fill`/Filling**: The act of executing a user's cross-chain intent on the destination chain. The participant who fulfils a user's intent on the destination chain is called a **filler**.
+- **`Fill`/Filling**: The act of executing a user's cross-chain intent on the destination chain. The participant who fulfils a user's intent on the destination chain is called a **filler** or **solver**.
 - **`Leg`**: A portion of the user's intent that can be executed independently from the others. All legs must be executed for an intent to be considered fulfilled.
 - **Settlement**: The process of finalizing an intent operation, for example by managing user deposits and paying fillers. The contract responsible for this is called the **Settler**.
 
