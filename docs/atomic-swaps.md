@@ -69,7 +69,7 @@ At this stage, both chains (Starknet and Optimism) hold funds locked under the s
 
 ### 5. Secret disclosure and fund release
 
-- Bob monitors Starknet for conf irmation that the commitment is locked in his favor with the expected `Hashlock`.  
+- Bob monitors Starknet for confirmation that the commitment is locked in his favor with the expected `Hashlock`.  
 - Upon verification, Bob reveals the secret `S` on both chains, proving `HASH(S) = Hashlock`, thereby unlocking and claiming his funds while simultaneously releasing Alice's funds.  
 
 ## Conclusion  
