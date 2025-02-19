@@ -4,7 +4,7 @@ This document, in its current state, aims to be the starting point for a future 
 Requires: CAIP-10
 
 ## Abstract
-An extensible way to describe an address specific to one chain which includes the information to condense it into a human-readable name in a secure way.
+An extensible way to describe an address specific to one chain which includes the information to securely condense it into a human-readable name.
 
 ## Out of scope concerns
 Similarly to CAIP-10, this specification is not concerned with the mapping from a chain id to a network name, which might not be surjective (eg: the case where if there are multiple EIP-155 chains with chain id 8453, which one should we call Base?), regarding that resolution a social-layer problem until a future ERC decides to tackle it. Efforts in that front are tracked in [the chain registires document](../docs/chain-registries.md)
@@ -36,11 +36,11 @@ Interoperable address
     - The rules for wether to parse URL escaping in a resolver payload are specific to the resolver version
     - The rules for wether to parse URL escaping in a CAIP-10 account address are specific to its CAIP-2 chain namespace
 - To maintain the bijectivity of account ids and therefore interoperable addresses to on-chain addresses:
-    - In CAIP-2 namespaces where there is a canonicalization scheme (such as EIP-55 in EIP-155 chains) it SHOULD be used (using SHOULD since it would be a potentially unsolvable MUST in the case where there are competing canonicalization schemes)
+    - In CAIP-2 namespaces where there is a canonicalization scheme (such as EIP-55 in EIP-155 chains) it SHOULD be used.
     - In CAIP-2 namespaces where addresses have an *optional* checksum field, it MUST be omitted and the checksum defined in the standard be used without redundancy
     - In CAIP-2 namespaces where addresses are raw hexadecimal data without an EIP-55-equivalent capitalization scheme, the lowercase `a-f` characters MUST be used instead of uppercase ones.
     - In the case of EIP-155 chains, EIP-55 canonicalization MUST be used
-- The checksum MUST be the hexadecimal representation first four bytes of the keccak-256 hash of UTF-8 representation of the interoperable address from it's beginning up to and including the hash `#` character separating the checksum from the rest of the address (rationale: none)
+- The checksum MUST be the hexadecimal representation first four bytes of the keccak-256 hash of UTF-8 representation of the interoperable address from it's beginning up to and including the hash `#` character separating the checksum from the rest of the address.
 
 ## Human-readable name format definition
 
@@ -85,7 +85,8 @@ The human-readable name in this approach is consistent with the address format d
 ```bnf
 <human readable name> ::= 2::<short chain name>:<EIP-55 formatted address>
 ```
-Since wallet software can always validate the checksum, it MUST be removed
+Since wallet software can always validate the checksum, it MUST be removed.
+
 EIP-55 or applicable scheme is used for canonicalization only.
 
 #### Examples:
@@ -103,7 +104,7 @@ The machine address, in turn, specifies what will the source of truth be for the
 
 The chain/contract on which the ENSIP-11 contract used to resolve the human-readable name resides is abstracted away from the user, but implementing wallets MUST maintain a list of those considered trustworthy and warn the user or choose to display the machine address in full when the contract it instructs to use is outside the set.
 
-Also, wallets MAY have a default registry they use for converting Human-readable names into machine addresses. This means different wallets could potentially resolve the same human-readable name to different machine addresses which potentially also map to different raw addresses. This should be mitigated by wallet's choices of valid and default registries.
+Also, wallets MAY have a default registry they use for converting human-readable names into machine addresses. This means different wallets could potentially resolve the same human-readable name to different machine addresses which potentially also map to different raw addresses. This should be mitigated by wallets' choices of valid and default registries.
 
 #### Human-readable name format
 
