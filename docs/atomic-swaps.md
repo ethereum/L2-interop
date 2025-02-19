@@ -13,7 +13,7 @@ PreHTLC introduces three key improvements over [traditional HTLCs](https://en.bi
 - Multiple Solver selection – Users can designate multiple Solvers to fulfill the transaction, mitigating Solver liveness risks.  
 - Incentive alignment – A reward/slash mechanism ensures that Solvers are economically incentivized to execute transactions promptly.  
 
-This document does not exhaustively cover all [edge cases](https://docs.train.tech/protocol-spec/edge-cases) and [implementation details](https://docs.train.tech) but instead provides a high-level overview of the core process.  
+This document does not exhaustively cover all [edge cases](https://docs.train.tech/protocol-spec/edge-cases) and [implementation details](https://docs.train.tech) but instead provides a high-level overview of the core process.
 
 ## Protocol Walkthrough
 
@@ -50,10 +50,12 @@ At this point, the locked funds are subject to one of two conditions:
 - A `Hashlock` is added once the auction winner is determined.  
 - If no Solver successfully acts on this transaction before the `Timelock` expires, Alice can reclaim her funds.  
 
-### 2. Solver selection via Dutch Auction
+### 2. Solver selection via Auction
 
-- A Dutch auction is initiated, where Solvers (e.g., Bob and John) compete by progressively lowering their bid price.  
+- An auction is initiated, where Solvers (e.g., Bob and John) compete for the user's request.
 - Bob wins the auction, generates a secret `S`, computes `Hashlock = HASH(S)`, and locks 1 ETH for Alice on Optimism.  
+
+> The auction is completely off-chain, and its sole responsibility is to connect the user with the best solver. The user can skip this step by directly committing to an already known or preferred solver.
 
 ### 3. Local verification of the destination transaction
 
@@ -72,7 +74,11 @@ At this stage, both chains (Starknet and Optimism) hold funds locked under the s
 - Bob monitors Starknet for confirmation that the commitment is locked in his favor with the expected `Hashlock`.  
 - Upon verification, Bob reveals the secret `S` on both chains, proving `HASH(S) = Hashlock`, thereby unlocking and claiming his funds while simultaneously releasing Alice's funds.  
 
-## Conclusion  
+## Standartization
+
+The PreHTLC contract has no external dependencies. Its sole responsibility is to ensure that two parties can complete a trustless cross-chain swap in a timely and convenient manner, maintaining consistent core functionality across various implementations. Other components—such as Auction, Discovery, dApp, and Solver—are complementary and can be customized or entirely omitted to suit different use cases. For example, one might use standardized PreHTLC contracts alongside all components (Auction, Discovery, and Solver) to build a user-facing bridge UI, while another could use PreHTLC contracts independently, without any additional components, for peer-to-peer bridging.
+
+## Conclusion
 
 By integrating an intent/solver-based framework with PreHTLCs and local verification, this protocol achieves:  
 
