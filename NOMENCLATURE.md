@@ -24,21 +24,21 @@ This document defines the common terminology and conventions to be used across a
 ## Assets
 
 - **`Deposit`**:  The act of sending tokens to a contract that serves as escrow to execute a cross-chain operation, such as minting or releasing tokens on destination chains. Others may refer to this action as `lock`.
-- **`Mint` and `Burn`**: These terms refer to the actions of minting (increasing) and burning (decreasing) tokens in two token contracts associated with the same cross-chain operation. Typically, both contracts represent the same token. These actions may also be referred to as `crosschainBurn`/`crosschainMint` or `bridgeBurn`/`bridgeMint`.
+- **`Mint` and `Burn`**: A pattern used in cross-chain operation where tokens are burned (supply decreased) on origin chain and minted (supply increased) on destination chain to simulate the effect of tokens "moving" between chains. Both token contracts should represent the same asset. These actions may also be referred to as `crosschainBurn`/`crosschainMint` or `bridgeBurn`/`bridgeMint`.
 
 ## Intents
 
-- **`Fill`/Filling**: The act of executing a user's cross-chain intent on the destination chain. The participant who fulfils a user's intent on the destination chain is called a **filler** or **solver**.
+- **`Fill`**: The act of a participant (called a `filler` or `solver`) executing a user's cross-chain intent on the destination chain(s) - for example, delivering tokens or executing a swap that the user requested.
 - **`Leg`**: A portion of the user's intent that can be executed independently from the others. All legs must be executed for an intent to be considered fulfilled.
-- **Settlement**: The process of finalizing an intent operation, for example by managing user deposits and paying fillers. The contract responsible for this is called the **Settler**.
+- **Settlement**: The process that happens after a successful fill where the system verifies the fill was executed correctly and handles the financial aspects —specifically, releasing the user's deposited funds to pay the filler for their service. The contract responsible for managing deposits and payments is called the **Settler** and may use a cross-chain verification method.
 
 ## Messaging
 
-- **Message**: Data transmitted between chains.
-  - **`send`**: Used to denote the act of sending a message. Generally, the functions responsible for this are named `sendMessage`.
-  - **`receive`**: Used to denote the act of receiving a message. Depending on the context, receiving a message may have its own flow or involve multiple steps. Functions might be named `receiveMessage`, `relayMessage`, `validateMessage`, `executeMessage` or similar.
+- **Message**: Information transmitted between chains.
+  - **`send`**: The act of marking information on the origin chain to be transmitted to another chain(s). Functions in existing implementations are tipically named as `sendMessage` or others.
+  - **`receive`**: Used to denote the act of receiving a message. Depending on the context, receiving a message may have its own flow or involve multiple steps. There are two ways a message can be received: through a _push_ model (where the underlying action is executed as soon as available to do so, enforced by some protocol rules and operators) or through a _pull_ model (where users or external operators self-complete the cross-chain operation). Functions in existing implementations are tipically named as `receiveMessage`, `relayMessage`, `validateMessage`, `executeMessage` or others.
 - **`Metadata`**: Information about the message (sender, receiver, nonce, etc.)
-  - **`ChainId`**: Referes the chain identifier. Others might refer to it as "domain" instead of "chain," or simply as the destination.
+  - **`ChainId`**: Referes the chain identifier. Existing implementations might refer to it as "domain" instead of "chain," or simply as the destination.
 - **`Payload`**: The actual data orinstructions being transmitted.
 - **Verification**: The process of validating cross-chain messages.
  
