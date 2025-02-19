@@ -74,7 +74,7 @@ At this stage, both chains (Starknet and Optimism) hold funds locked under the s
 - Bob monitors Starknet for confirmation that the commitment is locked in his favor with the expected `Hashlock`.  
 - Upon verification, Bob reveals the secret `S` on both chains, proving `HASH(S) = Hashlock`, thereby unlocking and claiming his funds while simultaneously releasing Alice's funds.  
 
-## Standartization
+## Standardization
 
 The PreHTLC contract has no external dependencies. Its sole responsibility is to ensure that two parties can complete a trustless cross-chain swap in a timely and convenient manner, maintaining consistent core functionality across various implementations. Other components—such as Auction, Discovery, dApp, and Solver—are complementary and can be customized or entirely omitted to suit different use cases. For example, one might use standardized PreHTLC contracts alongside all components (Auction, Discovery, and Solver) to build a user-facing bridge UI, while another could use PreHTLC contracts independently, without any additional components, for peer-to-peer bridging.
 
