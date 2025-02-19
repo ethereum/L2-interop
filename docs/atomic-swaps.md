@@ -76,7 +76,7 @@ At this stage, both chains (Starknet and Optimism) hold funds locked under the s
 
 ## Standardization
 
-The PreHTLC contract has no external dependencies. Its sole responsibility is to ensure that two parties can complete a trustless cross-chain swap in a timely and convenient manner. Other components—such as Auction, Discovery, dApp, and Solver—are complementary and can be customized or entirely omitted to suit different use cases. For example, one might use standardized PreHTLC contracts alongside all components (Auction, Discovery, and Solver) to build a user-facing bridge UI, while another could use PreHTLC contracts independently, without any additional components, for peer-to-peer bridging.
+The PreHTLC contracts are ownerless, immutable, and have no external dependencies. Their sole responsibility is to ensure that two parties can execute a trustless cross-chain swap. Other components—such as Auction, Discovery, dApp, and Solver—are complementary and can be customized or omitted entirely to suit different use cases.
 
 ## Conclusion
 
