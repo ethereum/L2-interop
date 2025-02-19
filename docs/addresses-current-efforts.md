@@ -28,16 +28,17 @@ A core challenge in Ethereum's multichain landscape is disambiguating addresses 
 
 The existing approaches to chain-specific addresses represent an evolution in thinking about cross-chain identification rather than competing solutions. Some standards builds upon lessons learned from previous implementations while other targets other aspects or they could built on top of.
 
-| **Feature** | ERC-3770 | CAIP-10 | ERC-7828 |
-| --- | --- | --- | --- |
-| **Status** | Draft (Fully defined) | Final (Fully defined) | Draft (Incomplete) |
-| **Format Example** | `chain:address` | `chain_namespace:chain_reference:address` | `address:chain.eth` or `address@chain.eth` |
-| **Human Readability (_best-case scenario_)** | Medium | Medium | High |
-| **Technical Compatibility** | EVM only (but extensible) | All chains | EVM only (potential non-EVM support) |
-| **ENS Integration** | Not Required | Not Required | Required |
-| **DID Compatibility** |  |  |  |
-| **Checksum Support** | Incomplete (ERC-55 only) | No | Yes |
-| **Usage of lists** | Yes (referencing github.com/ethereum-lists/chains) | No | Yes (requires ERC-7785 aka onchain registry) |
+| **Feature** | ERC-3770 | CAIP-10 | ERC-7828 | ENSIP-9/ENSIP-11 |
+| --- | --- | --- | --- | --- |
+| **Scope** | Primarily a UI/UX layer standard for human-readable prefixes | A universal account identifier format (machine-readable) for all blockchains | On-chain naming integration with ENS (for chain names and addresses), EVM-focused | ENS resolver-level standards for storing/retrieving multi-chain addresses |
+| **Status** | Draft (Fully defined) | Final (Fully defined) | Draft (Incomplete) | Final/Draft |
+| **Format Example** | `chain:address` | `chain_namespace:chain_reference:address` | `address:chain.eth` or `address@chain.eth` | Still uses typical `.eth` format |
+| **Human Readability (_best-case scenario_)** | Medium | Medium | High | High (from typical ENS format) | 
+| **Technical Compatibility** | EVM only (but extensible) | All chains | EVM only (potential non-EVM support) | Blockchain that are part of [SLIP-0044](https://github.com/satoshilabs/slips/blob/master/slip-0044.md) or follows EVM `chainId` specs |
+| **ENS Integration** | Not Required | Not Required | Required | Required |
+| **DID Compatibility** |  |  |  |  |
+| **Checksum Support** | Incomplete (ERC-55 only) | No | Yes | Yes |
+| **Usage of lists** | Yes (referencing github.com/ethereum-lists/chains) | No | Yes (requires ERC-7785 aka onchain registry) | Base in [SLIP-0044](https://github.com/satoshilabs/slips/blob/master/slip-0044.md) |
 
 # Additional Considerations
 
