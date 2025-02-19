@@ -22,7 +22,7 @@ Within narrow message-based protocols:
     - A broadcast message doesn't specify a receiver. It may specify a destination chain.
 - **Active vs Passive**
     - This is merely about the on-chain APIs and is independent of the push or pull nature of the protocol.
-    - An active protocol concludes delivery of the message by executing a call (`CALL`) on the destination chain to the receiver from a protocol contract. This call can be done in one of two ways:
+    - An active protocol concludes delivery of the message by executing a call (`CALL`) to the receiver on the destination chain from a protocol contract. This call can be done in one of two ways:
         - **Explicit vs Implicit**
             - An explicit delivery invokes a special-purpose function on the receiver, e.g., `receiveMessage(address sender, bytes payload)`.
             - An implicit delivery invokes the raw message payload on the receiver. Parameters like the sender of the message are made available by the protocol, e.g., as public getter on a protocol contract.
