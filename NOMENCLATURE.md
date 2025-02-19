@@ -4,12 +4,12 @@ This document defines the common terminology and conventions to be used across a
 
 ## Core Terminology
 
-- **L1 (or Layer 1)**: A blockchain that is self-reliant on its validator set for its security and consensus properties.
+- **L1 (or Layer 1)**: A blockchain that is self-reliant on its validator set for its security and consensus properties. While it may refer to any blockchain that fits this definition, it commonly refers to the Ethereum Mainnet.
 - **L2 (or Layer 2)**: A blockchain aimed to scale the L1 in a trust minimized way  while maintaining a "safe bridge" between them. Blockchains in this category include Rollups and Plasma solutions, and may also include other less-secure solutions such as Validiums and Optimiums. For a detailed characterization of this category, please refer to [L2Beat](https://l2beat.com/).
 - **L3 (or Layer 3)**: A blockchain that follow a similar structure to the L2 <> L1 structure but with an L2 underneath.
-- **Origin Chain**: The chain where a cross-chain operation originates.
-- **Destination Chain**: The chain where a cross-chain operation is received/executed.
-- **Gateway/Bridge**: A system enabling communication between chains.
+- **Origin Chain**: The chain where a user starts a cross-chain operation. In the context of assets, this could be where the user's funds or assets currently reside.
+- **Destination Chain**: The chain where the desired side effects of a cross-chain operation are received or executed. In the context of assets, this could be where the user receives the funds.
+- **Bridge**: A system enabling communication between chains. Others may use the term "Gateway".
 - **User**: The end-user initiating a cross-chain operation.
 - **Sender**: The account/contract initiating a message on the origin chain.
 - **Receiver**: The account/contract receiving a message on the destination chain.
