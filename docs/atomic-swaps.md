@@ -61,7 +61,7 @@ At this point, the locked funds are subject to one of two conditions:
 
 - The dApp performs local verification by monitoring Bob’s transaction on Optimism.  
 - If a light client is available, it is utilized for validation. Otherwise, the dApp queries multiple RPC endpoints or a user-specified node.
-- Upon confirming the transaction, the `Hashlock` is retrieved.  
+- Upon confirming the transaction, the `Hashlock` is retrieved.
 
 ### 4. Finalization
 
@@ -82,7 +82,7 @@ The PreHTLC contracts are ownerless, immutable, and have no external dependencie
 
 By integrating an intent/solver-based framework with PreHTLCs and local verification, this protocol achieves:  
 
-- Sub-30-second settlement times for cross-chain transfers.  
+- Sub-30-second (2 x src_block_time + 2 x dst_block_time) settlement times for cross-chain transfers.
 - Neither Users’ nor Solvers’ funds are ever controlled by an intermediary.  
 - Any blockchain network can be onboarded without requiring explicit permission.  
 
