@@ -82,7 +82,7 @@ The PreHTLC contracts are ownerless, immutable, and have no external dependencie
 
 By integrating an intent/solver-based framework with PreHTLCs and local verification, this protocol achieves:  
 
-- Sub-30-second (2 x src_block_time + 2 x dst_block_time) settlement times for cross-chain transfers.
+- Sub-30-second (`2 x src_block_time + 2 x dst_block_time`) settlement times for cross-chain transfers.
 - Neither Users’ nor Solvers’ funds are ever controlled by an intermediary.  
 - Any blockchain network can be onboarded without requiring explicit permission.  
 
