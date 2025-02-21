@@ -10,9 +10,9 @@ This document outlines the user stories as a goal for implementing chain-specifi
 
 **As an end-user**:
 
-I want to send asset to an address on a different chain.
+I want to send asset to any address,regardless of which chain it is on.
 
-**Rationale**: Since I noticed my assets are a different chain where I know the address where I should transfer any value, I can transfer it safely.
+**Rationale**: I should be able to send assets as easily as if everything was on a single chain.
 
 > 📌
 > **Acceptance Criteria:**
@@ -37,21 +37,37 @@ I want to send assets using an human-readable address.
 > - Chain information is shown.
 > - Optional: shows resolved address.
 
-### US3: Send Asset Error Prevention
+### US3: Support for Unknown Chains
 
 **As an end-user**:
 
-I want to be warned if I’m sending to potentially incorrect chain or address.
+I want to send assets to addresses on chains that my wallet hasn't explicitly integrated with.
+
+**Rationale**: I shouldn't be limited to only sending assets to chains that my wallet already knows about.
+
+> 📌
+> **Acceptance Criteria:**
+>  - Validates the existence of the chain via an on-chain list of chain configs.
+> - Fetch chain config and confirms compatibility.
+> - Validates the existence of resolved addresses.
+> - Shows confirmation with chain information.
+> - Clearly indicates this is a new/unknown chain to the user.
+> - Optional: Allows user to save chain for future use.
+
+### US4: Send Asset Error Prevention
+
+**As an end-user**:
+
+I want to be warned if I’m sending to potentially inexistent chain or address.
 
 **Rationale**: I can avoid losing funds.
 
 > 📌
 > **Acceptance Criteria:**
-> - Validates the existence of resolved addresses.
-> - Shows confirmation with chain information.
-> - Warn about a non-existent account on the destination chain.
-> - Prevents common user mistakes.
-> - Optional: shows the resolved address.
+> - All US3 acceptance criteria apply here.
+> - If account is not found, warn about non-existent account.
+> - If chain is not found, warn about a non-existent destination chain.
+> - Optional: If chain identifier is intuitively distinguishable, suggest correction and let the user decide whether to continue.
 
 ## Developer Stories
 
