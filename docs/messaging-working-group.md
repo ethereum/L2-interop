@@ -27,7 +27,7 @@ We are currently working on 3 tasks:
 
 
 ## Goals: 
-### 1. Interface supports only the most common use cases: bridging and cross-chain function calls. 
+### 1. Interface supports only the most common use cases: bridging and cross-chain function calls. --> We'll start with 90% of uses cases, aiming to make those APIs simple, and then we can add more complex use cases from there. 
 
 Reasoning:  
 * Supporting all use cases results in a more complex interface.  This may lead developers to use wrapper contracts to simplify the interface or to not adopt the interface at all, defeating the purpose of the interface.  
@@ -35,28 +35,69 @@ Reasoning:
 
 #### 1a. Developers should not need to use wrapper contracts to interact with the interface. 
  
-### 2. Interface should be VM-agnostic. 
+### 2. Interface should be VM-agnostic.  --> Agree
 
 Reasoning: 
 * Our goal is to connect the entire ecosystem of Lns, including the many Lns using different VMs. 
 * We will need to balance this goal with goal 1; we shouldn't make the interface overly complex to achieve this goal. 
 
-### 3. Interface should be proof-agnostic. 
+### 3. Interface should be proof-agnostic. --> Agree
 
 Reasoning:  
 * Many proof systems will be used in the underlying messaging protocols.  This interface should be compatible with any of those protocols. Otherwise, the interface does not achieve its primary goal abstracting the underlying messaging protocol from developers. 
 
-### 4. Interface should be protocol-agnostic. 
+### 4. Interface should be protocol-agnostic. --> Agree
 
 Reasoning: 
 * Many messaging protocols will be used.  This interface should be compatible with any of those protocols. 
 
-### 5. Interface is compatible with any Ln↔Ln messaging. 
+### 5. Interface is compatible with any Ln↔Ln messaging. --> Agree
 
 Reasoning: 
 * Both L2 <> L2 messaging and L1 <> L2 messaging are core use cases. If we want to create a unified developer experience, the interface needs to support both using the same abstractions.  
 * L3 <> L2 messaging is a less common use case, but should be supported. 
 * Key Question: Should it be an explicit goal of this interface to support L1 <> L1 messaging? 
+
+### 6. Making it happen soon 
+
+Glacis --> TODO investigate
+OZ adapts - 2-4 weeks / adapter --> 3 months for at least 3 adapters
+ Axelar
+ Wormhole
+ Hyperlane
+ LZ
+ Chainlink
+
+ Parallel track - public support from major protocols to advertise this
+
+### 7. Support m / n messsage aggregation
+
+### 8. Data transfer
+
+### 9. Only narrow casting vs broadcasting to begin with
+3 ways: push, pull, read
+
+push - 
+pull - 
+
+Push vs Pull
+A push protocol allows for the entire cross-chain transmission lifecycle, up to and including delivery to a receiver, to be arranged on the source chain without a user transaction on the destination chain. The protocol may rely on third party relayers to complete the lifecycle.
+
+A pull protocol requires a user (or application) to complete the lifecycle with a transaction on the destination chain. The protocol can be said to require self-relaying.
+
+push + local pull
+push + execute 
+don't need to worry about broadcast (for now
+
+### 10. Gas is out of scope (for now) 
+
+### 11. Interface does not enforce ordering 
+
+### 12. Liveness
+The protocol MUST guarantee Safety: A message is delivered at the destination if and only if it was sent at the source. The delivery process must ensure a message is only delivered once the sending transaction is finalized, and not delivered more than once. Note that there can be multiple messages with identical parameters that must be delivered separately.
+The protocol MUST guarantee Liveness: A sent message is delivered at the destination eventually, assuming Liveness and censorship-resistance of the source and destination chains.
+
+
 
 ## Miscellaneous Questions (to be addressed later)
 * Should the interface include gas quoting?
