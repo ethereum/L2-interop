@@ -71,4 +71,17 @@ I want to be warned if I’m sending to potentially inexistent chain or address.
 
 ## Developer Stories
 
+### DS1: Parsing and Validating Addresses
 
+**As an wallet/dApp developer**:
+
+I want a straightforward API to parse a chain-specific address (e.g., "chain:0x123...") and validate its correctness,
+so that I can accept user inputs and avoid sending transactions to invalid or ambiguous destinations.
+
+**Rationale**: I can reduce the risk of ambiguity and then error.
+
+> 📌
+> **Acceptance Criteria:**
+> - There is libraries that accepts a chain-specific string and outputs a result (e.g., {`chainIdentifier`, `rawAddress`}).
+> - Distinguishable for cases where the same address format is used (especially relevant in EVM)
+> - confirm chain identifiers against a known registry.
