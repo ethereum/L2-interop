@@ -99,6 +99,53 @@ The protocol MUST guarantee Liveness: A sent message is delivered at the destina
 
 
 
+
+### Message Format
+
+Message {
+ payload: bytes
+ source address: bytes
+ source chain id: bytes
+ destination adress: bytes
+ destination chain: bytes
+ nonce: uint32
+}
+
+packet_id - unique id, bytes
+
+// destination addr 
+fn send (payload, (destination address?), destination chain) -> packet id
+
+
+// Won't support for now
+fn recv (packet id) -> Message
+
+
+    function executeMessage(
+        string calldata sourceChain, // [CAIP-2] chain identifier
+        string calldata sender, // [CAIP-10] account address
+        bytes calldata payload,
+        bytes[] calldata attributes
+    ) external payable returns (bytes4);
+
+
+
+  Gas
+
+ source chain: 
+  pay_gas(packet id) payable
+  
+  estimate_gas(gas_limit, destination id, ) -> cost on origin gas token
+
+ // Didn't add enough gas in the beginning
+  add_gas (
+
+
+
+
+Questions: 
+* Should we allow tx hash as unique id? 
+
 ## Miscellaneous Questions (to be addressed later)
 * Should the interface include gas quoting?
 * Should the interface be pull or push-based? 
