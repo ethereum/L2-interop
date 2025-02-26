@@ -63,6 +63,18 @@ At this point, the locked funds are subject to one of two conditions:
 - If a light client is available, it is utilized for validation. Otherwise, the dApp queries multiple RPC endpoints or a user-specified node.
 - Upon confirming the transaction, the `Hashlock` is retrieved.
 
+#### 3.1 Security considerations
+
+The security of the exchange relies on this step, where the dApp retrieves the `Hashlock`. It is crucial to ensure that the `Hashlock` is correct. 
+
+The worst-case scenario occurs when all of the following happen simultaneously:
+
+- There is no Light Client for the destination network.
+- Only a single RPC provider is available for that network.
+- This single RPC provider is also the solver matched with the user.
+
+Even in this case, the user still has the ability to manually verify the destination Hashlock and decide whether to proceed with the transaction.
+
 ### 4. Finalization
 
 - Once `Hashlock` is verified, Alice signs a transaction that assigns the `Hashlock` to her previously committed funds and sets the `receiver` to Bob.  
