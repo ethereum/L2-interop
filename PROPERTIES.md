@@ -60,7 +60,7 @@ The following properties outline the requirements for solutions in both spaces.
 
 For a comparison of current efforts, see [here](./docs/addresses-current-efforts.md).
 
-## Cross-Chain Addressing
+## Cross-Chain Naming
 
 ### Must-have
 
