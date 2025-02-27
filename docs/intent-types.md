@@ -61,3 +61,29 @@ sequenceDiagram
 ```
 
 This standard intentionally does not prescribe the specifics of final settlement logic or how cancellations (e.g., revoking an unfilled order) should be handled. Implementations may choose to use any cross-chain messaging system.
+
+## Intents with Atomic Swaps
+
+[This proposal](atomic-swaps.md) introduces a mechanism for achieving asset interoperability between Ethereum L2s (and beyond) using Atomic Swaps. The approach does not require a cross-chain messaging protocol, does not introduce new trust assumptions, and remains open and permissionless for any network to participate.
+
+```mermaid
+sequenceDiagram
+    participant P1 as User
+    participant SC as Source Chain
+    participant P2 as Solver
+    participant DC as Destination Chain
+
+
+    P1->>SC: commit()
+    SC-->>P2: TokenCommitted
+    P2->>DC: lock()
+    DC-->>P1: TokenLocked(hashlock)
+    P1->>SC: addLock(hashlock)
+    SC-->>P2: TokenLockAdded
+    P2->>SC: redeem(secret)
+    SC-->>P1: User Funds Recieved 
+    P2->>DC: redeem(secret)
+    DC-->>P2: Solver Funds Recieved
+```
+
+This approach ensures a scalable and trustless mechanism for cross-chain asset transfers without relying on third-party validators or external security mechanisms.

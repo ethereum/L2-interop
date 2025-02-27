@@ -12,6 +12,7 @@
 
 ## Intents
 - [Intent Types](intent-types.md)
+- [Intents with Atomic Swaps](atomic-swaps.md)
 
 ## Miscellaneous
 
