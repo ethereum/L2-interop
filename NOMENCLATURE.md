@@ -7,6 +7,8 @@ This document defines the common terminology and conventions to be used across a
 - **L1 (or Layer 1)**: A blockchain that is self-reliant on its validator set for its security and consensus properties. While it may refer to any blockchain that fits this definition, it commonly refers to the Ethereum Mainnet.
 - **L2 (or Layer 2)**: A blockchain aimed to scale the L1 in a trust minimized way  while maintaining a "safe bridge" between them. Blockchains in this category include Rollups and Plasma solutions, and may also include other less-secure solutions such as Validiums and Optimiums. For a detailed characterization of this category, please refer to [L2Beat](https://l2beat.com/).
 - **L3 (or Layer 3)**: A blockchain that follow a similar structure to the L2 <> L1 structure but with an L2 underneath.
+- **General-Purpose Chain**: A chain that supports arbitrary logic.
+- **App-Specific Chain**: A chain that supports only specific types of applications or functionalities.
 - **Origin Chain**: The chain where a user starts a cross-chain operation. In the context of assets, this could be where the user's funds or assets currently reside.
 - **Destination Chain**: The chain where the desired side effects of a cross-chain operation are received or executed. In the context of assets, this could be where the user receives the funds.
 - **Bridge**: A system enabling communication between chains. Others may use the term "Gateway".
@@ -23,8 +25,9 @@ This document defines the common terminology and conventions to be used across a
 
 ## Assets
 
-- **`Deposit`**:  The act of sending tokens to a contract that serves as escrow to execute a cross-chain operation, such as minting or releasing tokens on destination chains. Others may refer to this action as `lock`.
-- **`Mint` and `Burn`**: A pattern used in cross-chain operation where tokens are burned (supply decreased) on origin chain and minted (supply increased) on destination chain to simulate the effect of tokens "moving" between chains. Both token contracts should represent the same asset. These actions may also be referred to as `crosschainBurn`/`crosschainMint` or `bridgeBurn`/`bridgeMint`.
+- **Single `Mint` and `Burn`**: A pattern used in cross-chain operation where tokens are burned (supply decreased) on origin chain and minted (supply increased) on destination chain to simulate the effect of tokens "moving" between chains. Both token contracts should represent the same asset. These operations are not subject to market conditions and follow fixed output rules (e.g., maintaining 1:1 equivalence over time). This approach is sometimes referred to as `crosschainBurn`/`crosschainMint` or `bridgeBurn`/`bridgeMint`.
+
+- **`Deposit` and `mint` / `Burn` and `Withdraw`**:  A pattern used in cross-chain operations where tokens are deposited into a contract acting as escrow on the origin chain, triggering the minting of tokens on the destination chain. Similarly, tokens can be burned on one chain to facilitate their withdrawal on another. These operations are not subject to market conditions and follow fixed output rules (e.g., maintaining 1:1 equivalence over time). This approach is sometimes referred to as `Lock` and `Unlock`.
 
 ## Intents
 
