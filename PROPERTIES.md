@@ -18,6 +18,8 @@ From the integration perspective, we can separate cross-chain identification int
 - **Cross-Chain Naming**: Human-readable names or identifiers that can be resolved to cross-chain addresses (e.g., alice@rollup.eth).
 - **Cross-Chain Addressing**: Machine-readable addresses for uniquely identifying addresses across chains (e.g., eth:rollup:0x123...abc).
 
+_For a comparison of current efforts, see [here](./docs/addresses-current-efforts.md)._
+
 The following properties outline the requirements for solutions in both spaces.
 
 ## Cross-Chain Addressing
@@ -49,16 +51,13 @@ The following properties outline the requirements for solutions in both spaces.
 
 ### Nice to Have
 
-- On-chain config registries
-- Deterministic resolution from machine address to human-readable name
+- Resolution path using on-chain config registries
 
 ### Non-Goals
 
 - Human readability as primary concern
 - Enforcing specific name resolution services
 - Standardizing chain identifiers (covered by other standards)
-
-For a comparison of current efforts, see [here](./docs/addresses-current-efforts.md).
 
 ## Cross-Chain Naming
 
@@ -88,7 +87,7 @@ For a comparison of current efforts, see [here](./docs/addresses-current-efforts
 - Support for checksums at the name level
 
 ### Nice to have
-- Support for checksums at the name level
+- Reliance path in on-chain config registries
 
 ### Non-Goals
 - Enforcing specific name resolution services
