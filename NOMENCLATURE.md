@@ -46,7 +46,7 @@ This document defines the common terminology and conventions to be used across a
   - **`ChainId`**: Referes the chain identifier. Existing implementations might refer to it as "domain" instead of "chain," or simply as the destination.
 - **`Payload`**: The actual data orinstructions being transmitted.
 - **Verification**: The process of validating cross-chain messages.
-- **Push-based**: The full cross-chain transmission lifecycle (including destination execution) can be arranged by a transaction on the origin chain. Typically relies on third-party relayers.
+- **Push-based**: A full cross-chain transmission lifecycle (including destination execution) can be arranged by a transaction on the origin chain, typically relying on in-protocol methods or third-party relayers.
 - **Pull-based**: Requires a user (or application) to complete the lifecycle on the destination chain (so-called “self-relaying”).
  
 
