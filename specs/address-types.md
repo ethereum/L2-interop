@@ -52,7 +52,7 @@ Interoperable address
 ```
 
 ## Rationale
-- In order to guarantee future resolvers don't share prefixes with existing resolvers in an ambiguous way, and therefore human-readable names are always mappable to a single machine address, this standard defines the human-readable names to start with the resolver version. (TODO: ideally we should be smarter about this and resolve it in a way that doesnt expose this implementation quirk to users)
+- In order to guarantee future resolvers don't share prefixes with existing resolvers in an ambiguous way, and therefore human-readable names are always mappable to a single machine address, this standard defines the human-readable names to start with the resolver version. (TODO: ideally we should be smarter about this and resolve it in a way that doesn't expose this implementation quirk to users)
 - Similarly to CAIP-10, arbitrary characters can be url-encoded.
 
 ## Resolver version definitions
@@ -109,14 +109,14 @@ Also, wallets MAY have a default registry they use for converting human-readable
 #### Human-readable name format
 
 ```bnf
-<human readable name> ::= 3::<punycode-encoded name>@<chain-spec>
+<human readable name> ::= 3::<punycode-encoded name>@<chain-spec>#<checksum>
 <chain-spec>          ::= <CAIP-2 chain id>|<ERC-3770 shortName>
 ```
 
 #### Machine-address format
 
 ```bnf
-<machine address> ::= 3::<CAIP-10 account id of ENSIP-11 contract>:<CAIP-10 account id>#<checksum>
+<machine address> ::= 3:<CAIP-10 account id of ENSIP-11 contract>::<CAIP-10 account id>#<checksum>
 ```
 
 #### `machine address -> human-readable name` resolution
@@ -132,6 +132,7 @@ Also, wallets MAY have a default registry they use for converting human-readable
 7. Call `name(bytes32 node)` on the contract returned by the step above. Save the response as the `<punycode-encoded name>`.
 8. Check direct resolution of name obtained in the step above, and fail the resolution if it does not match, as described in ENSIP-19
 9. For the `<chain-spec>`, extract the CAIP-2 chain id from `<CAIP-10 account id>`. If said chain has an entry in ethereum-lists, display its shortname. Otherwise, display the raw CAIP-2 chain id.
+10. Append the checksum from the machine address.
 
 #### `human-readable name -> machine address ` resolution
 1. Let the user input a destination chain name, and convert it to a CAIP-2 chainId.
@@ -139,19 +140,26 @@ Also, wallets MAY have a default registry they use for converting human-readable
 3. Let the user input a unicode string instead of the punycode-encoded name.
 4. Convert the string from step 3 into a punycode-encoded name.
 5. Compute the punycode-encoded name's namehash.
-6. Call `addr(bytes32 namehash, coinType)` on the wallet's default resolver, with the values from steps 5 and 2 respectively.
+6. Call `addr(namehash, coinType)` on the wallet's default resolver, with the values from steps 5 and 2 respectively.
     - If it returns the zero address, prompt the user to pick another trusted resolver where the name is defined.
     - Failure mode: name cant be resolved with trusted resolvers.
 7. Construct `<CAIP-10 account id of ENSIP-11 contract>` with the resolver used in the step above.
 8. Construct `<CAIP-10 account id>` with the address returned in step 6 and the destination chain from step 1.
+9. The user should obviously not be prompted for the checksum, but it MUST be displayed somewhere in the wallet UI for the user to optionally validate with the receiver that they are using the same resolver.
+10. Wallets MAY choose to display the full machine address as well.
 
 #### Pre-validations
 - The CAIP-2 `chain_id` included within both CAIP-10 account ids can be mapped to a valid ENSIP-11 `coinType` which extends both ENSIP-9 and SLIP44
 
 #### Semantics
-- ENS uses [punycode](https://www.unicode.org/reports/tr46/) to encode non-ascii characters, which SHOULD be rendered by wallets. In cases where the wallet could infer the presence of non-ascii characters to be unlikely (eg: depending on locale), a warning SHOULD also be issued to the user.
+- ENS uses [punycode](https://www.unicode.org/reports/tr46/) to encode non-ascii characters, which SHOULD be rendered by wallets. In cases where the wallet could infer the presence of non-ascii characters to be unlikely (eg: depending on locale), a warning MAY also be issued to the user.
 - `<punycode-encoded name>` is to be the fully qualified name, including the TLD. 
-- For chains listed in `ethereum-lists/chains`, the short name MUST be used.
+- For chains listed in `ethereum-lists/chains`, the short name MUST be used, taking precedence over the CAIP-2 chain id.
+
+#### Rationale
+This is proposed as a way to have functional human readable names with existing tooling and infrastructure, while being flexible in not enshrining a particular contract to allow for future changes on where & how names are resolved. Future developments in chain configs and name registries should improve upon it's decentralization characteristics and render it obsolete in the long-term.
+
+Since it's possible for users' wallets to use different name registries by default when computing a machine address from a human-readable name, the checksum for the machine address is provided as a layer of defense against losing funds either by mis-configuration or deliberate attacks taking advantage of the differences between the data contained in different naming registries.
 
 #### Examples:
 
@@ -173,14 +181,7 @@ Human-readable name
     - option 2: convert it to resolver `1` -> guarantees not-that-bad-to-read address is shown to the user, might impose extra constraints on existing resolvers.
 
 ## Recommendations for rollups
-TODO: probably coupled to ERC-7785, might actually be out of scope
-
-## Possible failure modes
-
-### Pre-validation of machine addresses
-TODO
-### Computing human-readable name from machine address
-TODO
+TODO: probably coupled to ERC-7785, currently out of scope
 
 ## Rationale
 - URL-escaping of characters might be necessary for future resolvers
