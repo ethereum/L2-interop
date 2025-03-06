@@ -10,14 +10,14 @@ This document outlines the user stories as a goal for implementing chain-specifi
 
 **As an end-user**:
 
-I want to send asset to any address,regardless of which chain it is on.
+I want to send asset to any address, regardless of which chain it is on.
 
 **Rationale**: I should be able to send assets as easily as if everything was on a single chain.
 
 > 📌
 > **Acceptance Criteria:**
 > - Wallet detects and shows the destination chain when address is provided.
-> - Error prevention if sending to a non-existent account.
+> - Error prevention if sending to a non-existent account (e.g. non-registered address given a name).
 > - The chain-specific address should be clearly visualized.
 > - Clear separation between source and destination chain.
 > - Optional: Transfer method and costs are showed afterwards (Intents/Bridges).
@@ -32,10 +32,10 @@ I want to send assets using an human-readable address.
 
 > 📌
 > **Acceptance Criteria:**
-> - The Human-Readable address is resolved deterministically into a correct chain-specific addresses.
+> -  The Human-Readable name to chain-specific addresses conversion is unambiguous; the wallet must display the checksum for safety.
 > - Validates the existence of resolved addresses.
 > - Chain information is shown.
-> - Optional: shows resolved address.
+> - Optional: shows full-resolved address.
 
 ### US3: Support for Unknown Chains
 
@@ -68,6 +68,21 @@ I want to be warned if I’m sending to potentially inexistent chain or address.
 > - If account is not found, warn about non-existent account.
 > - If chain is not found, warn about a non-existent destination chain.
 > - Optional: If chain identifier is intuitively distinguishable, suggest correction and let the user decide whether to continue.
+
+### US5: Sharing Address (or Name)
+
+**As an end-user:**
+
+I want to shared an address (or name) in a way that clearly indicates the desired chain(s) and address recipient.
+
+**Rationale**: I can receive funds with confusion or loss.
+
+> 📌
+> **Acceptance Criteria:**
+> - Cross-chain address should be deterministically resolved into raw address + chain identifier.
+> - Name should be deterministically resolved into a cross-chain address.
+> - Sender should feel “obvious” when sending funds to the user.
+> - Optional: If a name correspond to several cross-chain addresses, it should default into or one or show options.
 
 ## Developer Stories
 
