@@ -20,41 +20,24 @@ I want to send asset to any address, regardless of which chain it is on.
 > - Error prevention if sending to a non-existent account (e.g. non-registered address given a name).
 > - The chain-specific address should be clearly visualized.
 > - Clear separation between source and destination chain.
-> - Optional: Transfer method and costs are showed afterwards (Intents/Bridges).
+> - Optional: Transfer method and costs are shown afterwards (Intents/Bridges).
 
-### US2: Human-Readable Addresses Usage Across Chains
+### US2: Human-Readable Name Usage Across Chains
 
 **As an end-user**:
 
-I want to send assets using an human-readable address.
+I want to send assets using a human-readable Name.
 
-**Rationale**: I can avoid dealing with raw addresses.
+**Rationale**: I want to avoid dealing with raw addresses.
 
 > 📌
 > **Acceptance Criteria:**
 > -  The Human-Readable name to chain-specific addresses conversion is unambiguous; the wallet must display the checksum for safety.
 > - Validates the existence of resolved addresses.
 > - Chain information is shown.
-> - Optional: shows full-resolved address.
+> - Optional: shows full-resolved machine address.
 
-### US3: Support for Unknown Chains
-
-**As an end-user**:
-
-I want to send assets to addresses on chains that my wallet hasn't explicitly integrated with.
-
-**Rationale**: I shouldn't be limited to only sending assets to chains that my wallet already knows about.
-
-> 📌
-> **Acceptance Criteria:**
->  - Validates the existence of the chain via an on-chain list of chain configs.
-> - Fetch chain config and confirms compatibility.
-> - Validates the existence of resolved addresses.
-> - Shows confirmation with chain information.
-> - Clearly indicates this is a new/unknown chain to the user.
-> - Optional: Allows user to save chain for future use.
-
-### US4: Send Asset Error Prevention
+### US3: Send Asset Error Prevention
 
 **As an end-user**:
 
@@ -64,25 +47,56 @@ I want to be warned if I’m sending to potentially inexistent chain or address.
 
 > 📌
 > **Acceptance Criteria:**
-> - All US3 acceptance criteria apply here.
+> - All US2 acceptance criteria apply here.
 > - If account is not found, warn about non-existent account.
 > - If chain is not found, warn about a non-existent destination chain.
-> - Optional: If chain identifier is intuitively distinguishable, suggest correction and let the user decide whether to continue.
+> - Optional: If chain identifier is intuitively distinguishable (e.g. ENS domains or CAIP-2 chain identifier mispellings), suggest correction and let the user decide whether to continue.
 
-### US5: Sharing Address (or Name)
+### US4: Sharing a Cross-Chain Address
 
 **As an end-user:**
 
-I want to shared an address (or name) in a way that clearly indicates the desired chain(s) and address recipient.
+I want to share a complete, unambiguous machine address so that the recipient knows exactly which chain and address they are sending funds to.
 
-**Rationale**: I can receive funds with confusion or loss.
+**Rationale**: I can receive funds, preventing losses.
 
 > 📌
 > **Acceptance Criteria:**
 > - Cross-chain address should be deterministically resolved into raw address + chain identifier.
-> - Name should be deterministically resolved into a cross-chain address.
-> - Sender should feel “obvious” when sending funds to the user.
-> - Optional: If a name correspond to several cross-chain addresses, it should default into or one or show options.
+> - No ambiguity is allowed.
+> - Optional: US6 (see below) is triggered if chain is unknown.
+
+### US5: Sharing a Name
+
+**As an end-user:**
+
+I want to share a human-readable name that can be resolved to one (or more) cross-chain addresses so that it’s more user-friendly and still prevents accidental misrouting.
+
+**Rationale**: Sharing a name is more conveniente than a raw address.
+
+> 📌
+> **Acceptance Criteria:**
+> - The human-readable name must be deterministically resolved into at least one cross-chain address.
+> - If a name corresponds to multiple cross-chain addresses, default to one or show options.
+> - Checksum should guard against accidental collisions.
+
+### US6: Support for Unknown Chains
+
+**As an end-user**:
+
+I want to send assets to addresses on chains that my wallet hasn't explicitly integrated with.
+
+**Rationale**: I shouldn't be limited to only sending assets to chains that my wallet already knows about.
+
+> 📌
+> **Acceptance Criteria:**
+>  - Validates the existence of the chain through a trusted provider (e.g. bridging service in the short term, and through an on-chain list of chain configs in the long term).
+> - Fetch chain config and confirms compatibility.
+> - Validates the existence of resolved addresses.
+> - Shows confirmation with chain information.
+> - Clearly indicates this is a new/unknown chain to the user.
+> - Optional: Allows user to save chain for future use.
+
 
 ## Developer Stories
 
@@ -97,6 +111,6 @@ so that I can accept user inputs and avoid sending transactions to invalid or am
 
 > 📌
 > **Acceptance Criteria:**
-> - There is libraries that accepts a chain-specific string and outputs a result (e.g., {`chainIdentifier`, `rawAddress`}).
-> - Distinguishable for cases where the same address format is used (especially relevant in EVM)
+> - There is libraries that accepts a chain-specific string and outputs a result (e.g., {`chainIdentifier`, `rawAddress`}, which are based in ehtereum-lists/chains, ERC-7785 or others).
+> - Distinguishable for cases where the same address format is used (e.g. in the case of raw addresses in EVM)
 > - confirm chain identifiers against a known registry.
