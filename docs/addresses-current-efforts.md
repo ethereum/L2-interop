@@ -16,6 +16,30 @@ A core challenge in Ethereum's multichain landscape is disambiguating addresses 
 
 [ERC-7828](https://ethereum-magicians.org/t/erc-7828-chain-specific-addresses-using-ens/21930) builds on top of [ERC-7785](https://ethereum-magicians.org/t/erc-7785-onchain-registration-of-chain-identifiers/21299), to integrate with ENS, enabling the storage of chain names within an existing chain ID mapping and moving registrations away from centralized registries. Address formats could take the form of `alice@rollup` or `alice.rollup.eth`, which can be resolved on-chain through wallets.
 
+## ENSIP-9: Multichain Address Resolution
+
+[ENSIP-9](https://github.com/ensdomains/ensips/blob/master/ensips/9.md) introduces a unified way for ENS resolvers to store and return addresses for different blockchains by overloading the `addr` function. Rather than proposing a textual format like `chain:address`, ENSIP-9 leverage from coin types (following [SLIP-0044](https://github.com/satoshilabs/slips/blob/master/slip-0044.md)). This allows resolvers to identify each blockchain by its unique coin type and store the address in its native binary form (such as 20-byte hex for Ethereum, base58-decoded bytes for Bitcoin, etc).
+
+### ENSIP-11: EVM compatible Chain Address Resolution
+
+[ENSIP-11](https://github.com/ensdomains/ensips/blob/master/ensips/11.md) extends ENSIP-9 by introducing a dedicated range of coin types for EVM chains. This range prevents collision with existing [SLIP-0044](https://github.com/satoshilabs/slips/blob/master/slip-0044.md) coin types.
+
+## Comparison
+
+The existing approaches to chain-specific addresses represent an evolution in thinking about cross-chain identification rather than competing solutions. Some standards builds upon lessons learned from previous implementations while other targets other aspects or they could built on top of.
+
+| **Feature** | ERC-3770 | CAIP-10 | ERC-7828 | ENSIP-9/ENSIP-11 |
+| --- | --- | --- | --- | --- |
+| **Scope** | Primarily a UI/UX layer standard for human-readable prefixes | A universal account identifier format (machine-readable) for all blockchains | On-chain naming integration with ENS (for chain names and addresses), EVM-focused | ENS resolver-level standards for storing/retrieving multi-chain addresses |
+| **Status** | Draft (Fully defined) | Final (Fully defined) | Draft (Incomplete) | Final/Draft |
+| **Format Example** | `chain:address` | `chain_namespace:chain_reference:address` | `address:chain.eth` or `address@chain.eth` | Still uses typical `.eth` format |
+| **Human Readability (_best-case scenario_)** | Medium | Medium | High | High (from typical ENS format) | 
+| **Technical Compatibility** | EVM only (but extensible) | All chains | EVM only (potential non-EVM support) | Blockchain that are part of [SLIP-0044](https://github.com/satoshilabs/slips/blob/master/slip-0044.md) or follows EVM `chainId` specs |
+| **ENS Integration** | Not Required | Not Required | Required | Required |
+| **DID Compatibility** |  |  |  |  |
+| **Checksum Support** | Incomplete (ERC-55 only) | No | Yes | Yes |
+| **Usage of lists** | Yes (referencing github.com/ethereum-lists/chains) | No | Yes (requires ERC-7785 aka onchain registry) | Base in [SLIP-0044](https://github.com/satoshilabs/slips/blob/master/slip-0044.md) |
+
 # Additional Considerations
 
 Unique chain identifiers rely on social consensus to avoid collisions that could break integrations. The transition from off-chain registries to on-chain methods in the Ethereum ecosystem has been widely discussed and documented [here](chain-registries.md).
