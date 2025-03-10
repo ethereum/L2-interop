@@ -1,7 +1,7 @@
 Introducing: Interoperable Addresses
 ====
 
-*Specs in the formal format are written [here](/specs/chain-specific-addresses/cross-chain-interoperable-addresses-spec.md)*.
+*Specs in the formal format are written [here](/specs/addresses/cross-chain-interoperable-addresses-spec.md)*.
 
 Interoperable Addresses is a standard defining address formats for a multi-chain world.
 
