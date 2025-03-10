@@ -5,16 +5,16 @@
 
 ## Chain-Specific Addresses
 
-- [Current Efforts](docs/chain-specific-addresses/csa-current-efforts.md)
-- [User Stories](docs/chain-specific-addresses/csa-user-stories.md)
-- [Interoperable Address: Explainer](docs/chain-specific-addresses/interoperable-address-explainer.md)
+- [Current Efforts](chain-specific-addresses/csa-current-efforts.md)
+- [User Stories](chain-specific-addresses/csa-user-stories.md)
+- [Interoperable Address: Explainer](chain-specific-addresses/interoperable-address-explainer.md)
 
 ## Message Passing
-- [Current Efforts](docs/message-passing/messaging-current-efforts.md)
+- [Current Efforts](message-passing/messaging-current-efforts.md)
 
 ## Intents
-- [Intent Types](docs/intents/intent-types.md)
-- [Intents with Atomic Swaps](docs/intents/atomic-swaps.md)
+- [Intent Types](intents/intent-types.md)
+- [Intents with Atomic Swaps](intents/atomic-swaps.md)
 
 ## Miscellaneous
 
