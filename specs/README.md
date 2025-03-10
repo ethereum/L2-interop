@@ -1,12 +1,13 @@
 # Specifications Index
 
-## Addresses (& chains)
-- [Address Types](address-types.md)
-
 ## Assets
 - [Asset Types](asset-types.md)
 
-## Messaging
+## Chain-Specific Addresses
+
+- [Cross-Chain Interoperable Addresses](chain-specific-addresses/cross-chain-interoperable-addresses-spec.md)
+
+## Message Passing
 - [Message Types](message-types.md)
 
 ## Intents
