@@ -1,7 +1,7 @@
 # Documentation Index
 
 ## Assets
-- [Asset Types](docs/assets/asset-types.md)
+- [Asset Types](assets/asset-types.md)
 
 ## Chain-Specific Addresses
 
