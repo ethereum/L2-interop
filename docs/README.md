@@ -1,13 +1,13 @@
 # Documentation Index
 
+## Addresses
+
+- [Current Efforts](addresses/csa-current-efforts.md)
+- [User Stories](addresses/csa-user-stories.md)
+- [Interoperable Address: Explainer](addresses/interoperable-address-explainer.md)
+
 ## Assets
 - [Asset Types](assets/asset-types.md)
-
-## Chain-Specific Addresses
-
-- [Current Efforts](chain-specific-addresses/csa-current-efforts.md)
-- [User Stories](chain-specific-addresses/csa-user-stories.md)
-- [Interoperable Address: Explainer](chain-specific-addresses/interoperable-address-explainer.md)
 
 ## Message Passing
 - [Current Efforts](message-passing/messaging-current-efforts.md)
