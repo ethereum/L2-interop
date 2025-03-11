@@ -1,18 +1,20 @@
 # Documentation Index
 
-## Addresses (& chains)
-- [Current efforts](addresses-current-efforts.md)
+## Addresses
+
+- [Current Efforts](addresses/csa-current-efforts.md)
+- [User Stories](addresses/csa-user-stories.md)
+- [Interoperable Address: Explainer](addresses/interoperable-address-explainer.md)
 
 ## Assets
-- [Comparisons](assets-comparisons.md)
-- [Asset Types](asset-types.md)
+- [Asset Types](assets/asset-types.md)
 
-## Messaging
-- [Comparisons](messaging-comparisons.md)
+## Message Passing
+- [Current Efforts](message-passing/messaging-current-efforts.md)
 
 ## Intents
-- [Intent Types](intent-types.md)
-- [Intents with Atomic Swaps](atomic-swaps.md)
+- [Intent Types](intents/intent-types.md)
+- [Intents with Atomic Swaps](intents/atomic-swaps.md)
 
 ## Miscellaneous
 
