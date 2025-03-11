@@ -18,7 +18,7 @@ From the integration perspective, we can separate cross-chain identification int
 - **Cross-Chain Naming**: Human-readable names or identifiers that can be resolved to cross-chain addresses (e.g., alice@rollup.eth).
 - **Cross-Chain Addressing**: Machine-readable addresses for uniquely identifying addresses across chains (e.g., eth:rollup:0x123...abc).
 
-_For a comparison of current efforts, see [here](./docs/addresses-current-efforts.md)._
+_For a comparison of current efforts, see [here](./docs/chain-specific-addresses/csa-current-efforts.md)._
 
 The following properties outline the requirements for solutions in both spaces.
 
