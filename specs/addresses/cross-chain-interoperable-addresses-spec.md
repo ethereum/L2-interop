@@ -64,15 +64,15 @@ MSB                                                            LSB
                 \------------- 207-0   Reserved
 ```
 
-#### Word 1:
-Binary-encoded CAIP-2 blockchain id (following [Appendix A](#Appendix-A)) inside a short-packed bytes array, as described in [Appendix C](#Appendix-C).
+#### Field 1:
+Binary-encoded CAIP-2 blockchain id (following [Appendix A](#Appendix-A)) inside a short-packed bytes array, as described in [Appendix C](#Appendix-C), taking 1 or more 32-byte words.
 
-#### Word 2:
-Binary-encoded address (following [Appendix B](#Appendix-B)) inside a short-packed bytes array, as described in [Appendix C](#Appendix-C).
+#### Field 2:
+Binary-encoded address (following [Appendix B](#Appendix-B)) inside a short-packed bytes array, as described in [Appendix C](#Appendix-C), taking 1 or more 32-byte words.
 
-#### Word 3+:
+#### Field 3+:
 Optionally used by the fields defined above, in the case chain ids or addresses are long enough to merit it.
-Further words may be used by future versions of the standard
+Further fields may be used by future versions of the standard
 
 ## Checksum definition & validation
 The high-level description of how to compute the checksum is:
