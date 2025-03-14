@@ -7,7 +7,7 @@ This document tries to lay out a framework for understanding and discussing cros
     - A value-transfer protocol allows cross-chain transmission of fungible assets.
         - Cross-chain value transfer is a form of exchange.
 - **Narrow vs Broad**
-    - In a narrow protocol, specific actions on a source chain initiate cross-chain communication. For example, that a specific contract was invoked (gateway, outbox, bridge, etc.) or a specific kind of event was emitted.This subset of the chain state is transmitted cross-chain.
+    - In a narrow protocol, specific actions on a source chain initiate cross-chain communication. For example, the invocation of a specific contract (gateway, outbox, bridge, etc.) or the emission of a specific type of event. This subset of the chain state is transmitted cross-chain.
         - Each of these actions is a **message**, so narrow protocols are also known as **message-based** protocols.
     - In a broad protocol, an unrestricted set of source chain state can be the basis for cross-chain communication. For example, all logs or all storage from the source chain could be accessed on the destination chain.
 - **Push vs Pull**
