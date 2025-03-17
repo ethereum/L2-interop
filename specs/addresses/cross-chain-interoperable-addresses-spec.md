@@ -10,17 +10,20 @@ An extensible way to describe an address specific to one chain which also includ
 Similarly to CAIP-10, this specification is not concerned with the mapping from a chain id to a network name, which might not be surjective (eg: the case where if there are multiple EIP-155 chains with chain id 8453, which one should we call Base?), regarding that resolution a social-layer problem until a future ERC decides to tackle it. Efforts in that front are tracked in [the chain registires document](../docs/chain-registries.md)
 
 # Definitions
-Interoperable address
+Interoperable Address
 : A binary payload which includes both the information to unambiguously point to a specific address on a specific chain and a _resolver specification_ which, together with this (and potentially future) ERCs, allows conversion to a human-readable name in a way that requires no further trust assumptions than those the wallet software executing said conversion already operates under.
 
 Human-readable name
 : A string representation of an interoperable address, condensed into something that is to be consumed by humans.
 
 # Restrictions for future versions
-- The Interoperable Address MUST include an address on a particular chain and MUST also specify on which chain said address exists.
+- The Interoperable Address MUST include an address on a particular chain and MUST also specify on which chain said address exists. A version requiring an indirection layer between data contained in the payload and the two fields described above would be in infringement of this restriction.
 - Interoperable Address versions MAY only be able to represent a subset of the CAIP-2 namespaces.
 - Interoperable Address versions MAY define extra fields containing information on how to display the addresses.
 - The most significant version bit is reserved to mean an address complies with the Interoperable Long Format, described in Interoperable Address version `0x8000`.
+- The second-most significant version bit is reserved to mean the payload includes information on how to display the address to users, but is not normative about how that information is to be encoded. An example of this is provided in Interoperable Address version `0xC000`.
+
+In short, the above means any Interoperable Address should be trivially convertible to Interoperable Long Format, `0x8000`, making all other versions second-class citizens to it.
 
 # Requirements for wallet software
 - Wallet software MUST perform all relevant pre-validations, including verifying the checksum, and report any errors to the user, for every defined resolver. Wallets MAY reject an interoperable address solely on the basis of these checks failing.
@@ -42,10 +45,7 @@ TODO
 # Security considerations
 TODO
 
-# Machine address format definition
-The alternative above wastes a lot of space in order to be compliant with ABI spec. Another alternative is to define an address format with packing more similar to what is used for Solidity contract's storage layout. Addresses will be more compact in transit, but turning their components into Solidity types will not be trivial, requiring a library.
-
-## Format definition
+# Binary Format definition
 Word 0 Is the only word which will be common to all versions, and is defined as follows:
 ```
 MSB                                                            LSB
@@ -58,7 +58,7 @@ MSB                                                            LSB
 
 No length restriction is placed on how many more words can an Interoperable Address span. Different versions of the standard can define uses for extra words and the 208 reserved bits.
 
-TODO: consider making this format 31 bytes and define standard ways to pad it so it can be saved in a `bytes` array taking only one word.
+TODO: consider making this format 31 bytes and define standard ways to pad it so it can be _saved_ in a `bytes` array taking only one word (ABI representation would not be significantly cheaper though).
 
 # Human-readable name format definition
 
@@ -135,7 +135,7 @@ Human-readable name
 The binary representation is identical to the format above, with the exception that the version number is different, indicating the intent for the chain to be displayed using the ERC-3770 shortname and the address to be displayed following mainnet's ENS deployment and ENSIP-11
 
 ### Supported chains
-Chain must be listed on ethereum-lists/chains on top of the restrictions as `0x0000`.
+Chain must be listed on ethereum-lists/chains on top of the restrictions of `0x0000`.
 
 ### Machine-address format
 Same as `0x0000`, with `0x0001` version
@@ -155,7 +155,7 @@ MSB                                                            LSB
 ```
 
 Human-readable name
-: `vitalik.eth@eth#618ad0d1`
+: `vitalik.eth@eth#618AD0D1`
 
 TODO: example on another chain
 
@@ -219,6 +219,8 @@ MSB                                                            LSB
                                           ^^^^^^^^^^^^^^^^^^^^^^ ---- 9-96   padding
                                                                 ^^ -- 0-8    2*20 (payload length)
 ```
+
+TODO: example with multi-word fields
 
 # Appendix A: Binary encoding of CAIP-2 blockchain id
 First two bytes are the binary representation of CAIP-2 namespace (see table below), rest are the CAIP-2 reference, whose encoding is namespace-specific and defined below.
