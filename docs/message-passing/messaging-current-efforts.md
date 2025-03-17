@@ -125,6 +125,38 @@ sequenceDiagram
 
 Most rollups have built-in messaging interfaces between L1 and L2. 
 
+### Linea
+
+Linea deploys the corresponding messenger contracts on both L1 and L2. The relayers (called Postbots) listen for calls made on either side and deliver them to the destination. All cross-chain messages pass through this service, which provides replay protection.
+
+The `sendMessage` function includes the value, recipient, fee to pay, and calldata, while `claimMessage` adds the fee recipient and nonce on top of those. Manual claiming is always available, especially used when no fee is set to be paid. For both flows, messages must first be verified against `MessageManager`. Additionally, for L2→L1 transfers, `claimMessageWithProof` is used, which includes a Merkle proof for final verification.
+
+```mermaid
+---
+config:
+  theme: dark
+  fontSize: 48
+---
+
+sequenceDiagram
+    participant User
+    participant OriginService as L1 or L2 MessageService (Chain A)
+    participant Relayer as PostBots/Off-chain Relayer
+    participant DestinationService as L2 or L1 MessageService (Chain B)
+    participant Recipient
+
+    User->>OriginService: sendMessage(to, fee, calldata)
+    OriginService->>OriginService: emit MessageSent(from, to, fee, value, nonce, calldata, messageHash)
+    Note over OriginService: Bridging logic <br/> (L1 deposit or L2 withdrawal initiated)
+    OriginService->>Relayer: Off-chain bridging or PostBots flow
+    Note over Relayer: Validation flow
+    Relayer->>DestinationService: claimMessage(from, to, fee, value, feeRecipient, calldata, nonce) <br/> or claimMessageWithProof(...) 
+    DestinationService->>DestinationService: emit MessageClaimed(messageHash)
+    DestinationService->>Recipient: Deliver message contents
+    DestinationService->>Relayer: receive fees (if it is allowed/seted)
+
+```
+
 ### OP Stack
 
 OP Stack deploys corresponding messenger contracts on both L1 and L2, as well as L2-to-L2 when interoperability is enabled at the protocol level. All of them include replay protection.
