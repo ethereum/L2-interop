@@ -7,7 +7,7 @@ Requires: RFC-4648, ENSIP-11, CAIP-2
 An extensible way to describe an address specific to one chain which also includes the information to securely condense it into a human-readable name.
 
 # Out of scope concerns
-Similarly to CAIP-10, this specification is not concerned with the mapping from a chain id to a network name, which might not be surjective (eg: the case where if there are multiple EIP-155 chains with chain id 8453, which one should we call Base?), regarding that resolution a social-layer problem until a future ERC decides to tackle it. Efforts in that front are tracked in [the chain registires document](../docs/chain-registries.md)
+Similarly to CAIP-10, this specification is not concerned with the mapping from a chain id to a network name, which might not be surjective (eg: the case where if there are multiple EIP-155 chains with chain id 8453, which one should we call Base?), regarding that resolution a social-layer problem until a future ERC decides to tackle it. Efforts in that front are tracked in [the chain registries document](../docs/chain-registries.md)
 
 # Definitions
 Interoperable Address
@@ -99,7 +99,8 @@ MSB                                                            LSB
 : Always `0x0000`
 
 `Checksum`
-: Computed as described in [Appendix D](#Appendix-D)
+: Computed as described in [Appendix D](#appendix-d-checksum-computation)
+
 
 `Chainid`
 : `uint48` containing the chainId for the target chain
@@ -175,10 +176,10 @@ MSB                                                            LSB
 ```
 
 #### Second field
-Serializes the chainid described in [Appendix A](#Appendix-A) and encodes it into a byte array as described in [Appendix C](#Appendix-C). It is a _field_ and not a _word_, since it may take up more than one word
+Serializes the chainid described in [Appendix A](#appendix-a-binary-encoding-of-caip-2-blockchain-id) and encodes it into a byte array as described in [Appendix C](#appendix-c-short-encoding-of-byte-arrays). It is a _field_ and not a _word_, since it may take up more than one word
 
 #### Third field
-Serializes the address described in [Appendix A](#Appendix-A) and encodes it into a byte array as described in [Appendix C](#Appendix-C). It is a _field_ and not a _word_, since it may take up more than one word, and may not start at the third word boundary if the second field takes up more than one word.
+Serializes the address described in [Appendix A](#appendix-a-binary-encoding-of-caip-2-blockchain-id) and encodes it into a byte array as described in [Appendix C](#appendix-c-short-encoding-of-byte-arrays). It is a _field_ and not a _word_, since it may take up more than one word, and may not start at the third word boundary if the second field takes up more than one word.
 
 ### Human-readable name resolution
 The CAIP-2 namespace is to be rendered alongside the CAIP-10 formatted address and the checksum:
