@@ -150,7 +150,7 @@ sequenceDiagram
     Note over OriginService: Bridging logic <br/> (L1 deposit or L2 withdrawal initiated)
     OriginService->>Relayer: Off-chain bridging or PostBots flow
     Note over Relayer: Validation flow
-    Relayer->>DestinationService: claimMessage(from, to, fee, value, feeRecipient, calldata, nonce) <br/> or claimMessageWithProof(...) 
+    Relayer->>DestinationService: claimMessage(from, to, fee, value, feeRecipient, calldata, nonce) <br/> or claimMessageWithProof(ClaimMessageWithProofParams params) 
     DestinationService->>DestinationService: emit MessageClaimed(messageHash)
     DestinationService->>Recipient: Deliver message contents
     DestinationService->>Relayer: receive fees (if it is allowed/seted)
@@ -163,7 +163,7 @@ OP Stack deploys corresponding messenger contracts on both L1 and L2, as well as
 
 - **L1→L2 / L2→L1**: This follows the `CrossDomainMessenger` library. The `sendMessage` function includes the target, value (in ETH), message data, and gas limit. The `relayMessage` function, in turn, includes the same parameters while adding the sender and nocce.
     - L1→L2 operates on a push-based model, where sequencers process deposits when deemed safe, strictly following the order in which they were initiated.
-    - L2→L1 follows a pull-based model, where withdrawals are in practice finalized asynchronously.
+    - L2→L1 follows a pull-based model, where withdrawals are in practice finalized asynchronously, executed through `finalizeWithdrawalTransaction`.
 
 ```mermaid
 ---
@@ -214,6 +214,40 @@ sequenceDiagram
     Relayer->>DestinationMessenger: relayMessage(id, sentMessage)
     DestinationMessenger->>DestinationMessenger: Validate & decode SentMessage Payload
     DestinationMessenger->>DestinationMessenger: emit RelayedMessage(source, nonce, messageHash)
+    DestinationMessenger->>Recipient: Execute message contents
+
+```
+
+### Scroll
+
+Scroll deploys messenger contracts on both L1 and L2. Cross-chain messages always go through these messengers, which provide replay protection.
+
+The L1→L2 / L2→L1 flow follows the `ScrollMessengerBase` library. The `sendMessage` function includes the target, value (in ETH), message data, and gas limit. Both implementations define two `sendMessage` functions (one of them includes `refundAddress`; perhaps the refund mechanism is not actually implemented for withdrawals). The `relayMessage` function, in turn, includes the same parameters while also adding the sender and nonce.
+
+- L1→L2 operates on a push-based model, where sequencers process deposits after they are included in the queue. The L1 contract also contains the `replayMessage` function, responsible for retrying or updating the gas for previously sent but skipped messages, and `dropMessage`, which allows the cancellation of a never-included message and the reclaiming of locked value.
+- L2→L1 follows a pull-based model, where messages are finalized asynchronously. Messages are finalized by calling `relayMessageWithProof`, which requires a Merkle Proof.
+
+```mermaid
+---
+config:
+  theme: dark
+  fontSize: 48
+---
+
+sequenceDiagram
+    participant User
+    participant OriginMessenger as L1 or L2 ScrollMessenger (Origin)
+    participant Relayer as Sequencer (L1 deposit) or Off-chain Relayer/User (L2 withdrawal)
+    participant DestinationMessenger as L2 or L1 ScrollMessenger (Destination)
+    participant Recipient
+
+    User->>OriginMessenger: sendMessage(target, value, message, gasLimit) <br/> or sendMessage(target, value, message, gasLimit, refundAddress)
+    OriginMessenger->>OriginMessenger: emit SentMessage(Sender, target, value, nonce, gasLimit, message)
+    Note over OriginMessenger: Bridging logic <br/> (L1 deposit or L2 withdrawal initiated)
+    OriginMessenger->>Relayer: Off-chain proof of inclusion/finality reached
+    Note over Relayer: Validation flow
+    Relayer->>DestinationMessenger: relayMessage(from, to, value, nonce, message) <br/> or relayMessageWithProof(..., proof)
+    DestinationMessenger->>DestinationMessenger: emit RelayedMessage(messageHash)
     DestinationMessenger->>Recipient: Execute message contents
 
 ```
