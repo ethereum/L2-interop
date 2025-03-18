@@ -42,9 +42,6 @@ In short, the above means any Interoperable Address should be trivially converti
 ## W3C DID
 TODO
 
-# Security considerations
-TODO
-
 # Binary Format definition
 Word 0 Is the only word which will be common to all versions, and is defined as follows:
 ```
@@ -100,7 +97,6 @@ MSB                                                            LSB
 
 `Checksum`
 : Computed as described in [Appendix D](#appendix-d-checksum-computation)
-
 
 `Chainid`
 : `uint48` containing the chainId for the target chain
@@ -222,6 +218,102 @@ MSB                                                            LSB
 ```
 
 TODO: example with multi-word fields
+
+## `0xC000`: Standard Long Format With Resolver Info: arbitrary length addresses, arbitrary length resolver specification
+
+### Machine-address format
+
+#### First word
+Uses reserved bits as a registry of interfaces the provided resolver conforms to.
+```
+MSB                                                            LSB
+0xC000XXXXXXXX0000000000000000000000000000000000000000000000000000
+  ^^^^------------------------ 255-240 Interoperable Address version
+      ^^^^^^^^ --------------- 239-208 Checksum
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+              \--------------- 207-0   Resolver Interface Key
+```
+The Resolver Interface Key defines how wallets should interact with the smart contract responsible for assigning names to addresses.
+Said contract MAY be responsible for naming the chain on which the target address resides as well as providing a human-readable name for the address. 
+
+#### Second field
+Serializes the chainid where the target account is located as described in [Appendix A](#appendix-a-binary-encoding-of-caip-2-blockchain-id) and encodes it into a byte array as described in [Appendix C](#appendix-c-short-encoding-of-byte-arrays).
+
+#### Third field
+Serializes the address of the target account as described in [Appendix A](#appendix-a-binary-encoding-of-caip-2-blockchain-id) and encodes it into a byte array as described in [Appendix C](#appendix-c-short-encoding-of-byte-arrays).
+
+#### Fourth field
+Serializes the chainid where the name-resolving contract is located as described in [Appendix A](#appendix-a-binary-encoding-of-caip-2-blockchain-id) and encodes it into a byte array as described in [Appendix C](#appendix-c-short-encoding-of-byte-arrays).
+
+#### Fifth field
+Serializes the address of the name-resolving contract as described in [Appendix A](#appendix-a-binary-encoding-of-caip-2-blockchain-id) and encodes it into a byte array as described in [Appendix C](#appendix-c-short-encoding-of-byte-arrays).
+
+### Human-readable name resolution
+Specific to every Resolver Interface Key
+
+### Resolver Interface Keys
+
+#### `0x0000000000000000000000000000000000000000000000000000`
+Responsibility over discovering the interface of the naming smart contract is delegated to the contract itself, via mechanisms comparable to `ERC165`, out of scope for this definition.
+
+#### `0x0000000000000000000000000000000000000000000000000001`
+Naming contract is expected to conform to ENSIP-11. ENSIP-11 does not name chains, so the CAIP-2 name should be used instead.
+
+### Examples
+
+Human-readable name:
+`vitalik.eth@eip155:1#618AD0D1`:
+
+First word: metadata
+```
+MSB                                                            LSB
+0xC0006164DA100000000000000000000000000000000000000000000000000001
+  ^^^^------------------------ 255-240 Interoperable Address version
+      ^^^^^^^^ --------------- 239-208 Checksum
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+              \--------------- 207-0   Resolver Interface Key
+```
+
+Second word (second field): target address' chainid
+```
+MSB                                                            LSB
+0x0100000000000000000000000000000000000000000000000000000000000002
+  ^^----------------------------------------------------------------- 255-249 bytes array payload
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ ---- 9-249   padding
+                                                                ^^ -- 0-8    2*1 (payload length)
+```
+
+Third word (third field): target address
+```
+MSB                                                            LSB
+0XD8DA6BF26964AF9D7EED9E03E53415D37AA96045000000000000000000000028
+  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^  ------------------------- 255-97 bytes array payload
+                                          ^^^^^^^^^^^^^^^^^^^^^^ ---- 9-96   padding
+                                                                ^^ -- 0-8    2*20 (payload length)
+```
+
+Fourth word (fourth field): name resolving contract's chainid
+```
+MSB                                                            LSB
+0x0100000000000000000000000000000000000000000000000000000000000002
+  ^^----------------------------------------------------------------- 255-249 bytes array payload
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ ---- 9-249   padding
+                                                                ^^ -- 0-8    2*1 (payload length)
+```
+
+Fifth word (fifth field): name resolving contract's address
+```
+MSB                                                            LSB
+0X00000000000C2E074EC69A0DFB2997BA6C7D2E1E000000000000000000000028
+  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^  ------------------------- 255-97 bytes array payload
+                                          ^^^^^^^^^^^^^^^^^^^^^^ ---- 9-96   padding
+                                                                ^^ -- 0-8    2*20 (payload length)
+```
+
+TODO: example with other ENSIP-11 contract
+
+### Security considerations
+TODO
 
 # Appendix A: Binary encoding of CAIP-2 blockchain id
 First two bytes are the binary representation of CAIP-2 namespace (see table below), rest are the CAIP-2 reference, whose encoding is namespace-specific and defined below.
