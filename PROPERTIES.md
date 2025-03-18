@@ -36,13 +36,13 @@ The following properties outline the requirements for solutions in both spaces.
 
 3. **Implementation Requirements**
 - Deterministic resolution from chain identifier + address
+- Guarantee there is a binary representation that can be passed, stored, and decoded unambiguously in smart contract environments
 - Clear error handling for invalid identifiers
 - Support for checksums and pre-validations
 
 ### Should-have
 
 1. **Extensibility**
-- Support for chain hierarchies (L1/L2/L3)
 - Support for future chain types and formats
 - Flexibility in implementation details
 
