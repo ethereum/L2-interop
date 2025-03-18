@@ -121,9 +121,74 @@ sequenceDiagram
     MailboxB->>Recipient: handle(origin, sender, _message)
 ```
 
+## General Messaging Protocols
+
+Different protocols have been built to enable message passing between the chains they operate on. In principle, all of them function with their own security models and independently of the chain's operations and governance. Most prioritize speed over canonical bridges.
+
+### CCTP
+
+CCTP is a cross-chain protocol for transferring USDC between supported chains. It deploys the respective messenger contracts, where messages (burn and then mint) are orchestrated.
+
+- **V1**: Establishes the `MessageTransmitter` by defining `sendMessage`, which includes the destination, recipient, and `messageBody`, as well as the `receiveMessage` function. Users can self-relay. Senders can specify who is allowed to relay by using `sendMessageWithCaller`. Messages can be replaced before being received using `replaceMessage`.
+
+```mermaid
+---
+config:
+  theme: dark
+  fontSize: 48
+---
+
+sequenceDiagram
+    participant User
+    participant SourceMessenger as MessageTransmitter (Chain A)
+    participant AttestationService as CCTP Attestation Service
+    participant Relayer as Off-Chain Relayer
+    participant DestinationMessenger as MessageTransmitter (Chain B)
+    participant Recipient as Recipient
+
+    User->>SourceMessenger: sendMessage(destinationDomain, recipient, messageBody) <br/> or sendMessageWithCaller (...destinationCaller))
+    SourceMessenger->>SourceMessenger: emit MessageSent(message)
+    Note over SourceMessenger: "AttestationService" monitors <br/> chain finality
+    AttestationService->>AttestationService: Signs message (off-chain)
+    AttestationService->>Relayer: Provide attestation
+    Relayer->>DestinationMessenger: receiveMessage(message, attestation)
+    DestinationMessenger->>Recipient: Execute message contents
+    DestinationMessenger->>DestinationMessenger: emit MessageReceived (caller, sourceDomain, nonce, sender, messageBody)
+
+```
+
+- **V2**: `MessageTransmitterV2` defines `sendMessage` similarly to V1 but adds `finalityThresholdExecuted` and hooks for custom logic in the form of metadata. The `receiveMessage` function is adapted to work with these new functionalities. Other functions from V1 are not explicitly present in this version.
+
+```mermaid
+---
+config:
+  theme: dark
+  fontSize: 48
+---
+
+sequenceDiagram
+    participant User
+    participant SourceMessenger as MessageTransmitter (Chain A)
+    participant AttestationService as CCTP Attestation Service
+    participant Relayer as Off-Chain Relayer
+    participant DestinationMessenger as MessageTransmitter (Chain B)
+    participant Recipient as Recipient
+
+    User->>SourceMessenger: sendMessage(destinationDomain, recipient, destinationCaller, messageBody, minFinalityThreshold)
+    SourceMessenger->>SourceMessenger: emit MessageSent(message)
+    Note over SourceMessenger: "AttestationService" monitors <br/> chain finality
+    AttestationService->>AttestationService: Signs message (off-chain)
+    AttestationService->>Relayer: Provide attestation
+    Relayer->>DestinationMessenger: receiveMessage(message, attestation)
+    DestinationMessenger->>Recipient: Execute message contents
+    DestinationMessenger->>DestinationMessenger: emit MessageReceived (caller, sourceDomain, nonce, sender, finalityThresholdExecuted messageBody)
+
+```
+
+
 ## Rollup Messaging Protocols
 
-Most rollups have built-in messaging interfaces between L1 and L2. 
+Most rollups have built-in messaging interfaces between L1 and L2. Some of them have their own messaging protocol with other instances they choose to interoperate with and may depend on.
 
 ### Linea
 
