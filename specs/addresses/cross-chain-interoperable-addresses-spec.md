@@ -22,31 +22,9 @@ Target address
 Name-resolving contract
 : A contract where responsibility over converting addresses and/or chainids in a format meant for machine consumption over to parts of a human-readable name.
 
-# Restrictions for future versions
-- The Interoperable Address MUST include an address on a particular chain and MUST also specify on which chain said address exists, fully defining a target address. A version requiring an indirection layer between data contained in the payload and the two fields described above would be in infringement of this restriction.
-- Interoperable Address versions MAY only be able to represent a subset of the CAIP-2 namespaces.
-- Interoperable Address versions MAY define extra fields containing information on how to display the addresses.
-- The most significant version bit is reserved to mean an address complies with the Interoperable Long Format, described in Interoperable Address version `0x8000`.
-- The second-most significant version bit is reserved to mean the payload includes information on how to display the address to users, but is not normative about how that information is to be encoded. An example of this is provided in Interoperable Address version `0xC000`.
-
 # Guarantees provided by the standard
 - Any Interoperable Address is trivially convertible to Interoperable Long Format, `0x8000`, making it a canonical representation for users who need to treat them opaquely.
 - Checksums are short enough to be compared by humans, and effectively identify a _target address_ independently of any extra data the address may contain.
-
-# Requirements for wallet software
-- Wallet software MUST perform all relevant pre-validations, including verifying the checksum, and report any errors to the user. Wallets MAY reject an interoperable address solely on the basis of these checks failing.
-
-# Encoding considerations
-- On-chain actors, such as smart contracts, MUST always receive and return the machine addresses as byte array.
-- Off-chain actors, such as wallets, MAY use the blockchain-native byte array representation, or, where practical MAY alternatively use base64 [^2] as defined in RFC-4648 to encode the former.
-- Users SHOULD NOT be shown the base64 or binary representations, instead, they should be shown the intended human-readable name or, in cases where that is not possible, falling back to interpreting it as Interoperable Address version `0x8000`.
-
-[^2]: Base64 was chosen since it is a more widely implemented standard than base58, and since machine addresses are not to be directly displayed to the user, the collision-avoidance reasons in favor of base58 do not apply
-
-# Compatibility with other public-key sharing standards
-
-## W3C DID
-TODO
 
 # Binary Format definition
 Word 0 Is the only word which will be common to all versions, and is defined as follows:
@@ -78,89 +56,6 @@ TODO: consider making this format 31 bytes and define standard ways to pad it so
 - Similarly, the account field includes `%` as a valid character to allow for url-encoding of any other characters.
 
 # Interoperable Address version definitions
-
-## `0x0000` : single-word 48-bit EVM chainids, no human-readable name resolution
-This encoding is meant to be the shortest possible way to encode most EVM addresses
-
-### Supported chains
-EVM chains with a chainid shorter than 48 bits (which potentially rules out chainids chosen to comply with ERC-7785)
-
-### Machine-address format
-
-```
-MSB                                                            LSB
-0x0000000000000000000000000000000000000000000000000000000000000000
-  ^^^^------------------------ 255-240 Interoperable Address version
-      ^^^^^^^^ --------------- 239-208 Checksum
-              ^^^^^^^^^^^^
-                \------------- 207-160 Chainid
-                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-                            \- 159-0   Address
-```
-
-`Interoperable Address version`
-: Always `0x0000`
-
-`Checksum`
-: Computed as described in [Appendix D](#appendix-d-checksum-computation)
-
-`Chainid`
-: `uint48` containing the chainId for the target chain
-
-`Address`
-: Native EVM address
-
-### Human-readable name resolution
-The CAIP-2 namespace is to be rendered alongside the `0x`-prefixed EIP-55 address and the checksum
-
-```
-<address>@<CAIP-2 namespace>#<checksum>
-```
-
-### Examples:
-Machine address
-: 
-```
-MSB                                                            LSB
-0x0000618ad0d1000000000001D8DA6BF26964AF9D7EED9E03E53415D37AA96045
-  ^^^^------------------------ 255-240 Interoperable Address version
-      ^^^^^^^^ --------------- 239-208 Checksum
-              ^^^^^^^^^^^^
-                \------------- 207-160 Chainid
-                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-                            \- 159-0   Address
-```
-
-Human-readable name
-: `0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045#6164da10@eip155:1#618ad0d1`
-
-## `0x0001` : Compact format, ENSIP-11+ERC-3770 name resolution 
-The binary representation is identical to the format above, with the exception that the version number is different, indicating the intent for the chain to be displayed using the ERC-3770 shortname and the address to be displayed following mainnet's ENS deployment and ENSIP-11
-
-### Supported chains
-Chain must be listed on ethereum-lists/chains on top of the restrictions of `0x0000`.
-
-### Machine-address format
-Same as `0x0000`, with `0x0001` version
-
-### Examples:
-Machine address
-: 
-```
-MSB                                                            LSB
-0x0001618ad0d1000000000001D8DA6BF26964AF9D7EED9E03E53415D37AA96045
-  ^^^^------------------------ 255-240 Interoperable Address version
-      ^^^^^^^^ --------------- 239-208 Checksum
-              ^^^^^^^^^^^^
-                \------------- 207-160 Chainid
-                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-                            \- 159-0   Address
-```
-
-Human-readable name
-: `vitalik.eth@eth#618AD0D1`
-
-TODO: example on another chain
 
 ## `0x8000`: Standard Long Format: arbitrary length addresses, CAIP-10 display format
 
@@ -320,6 +215,111 @@ TODO: example with other ENSIP-11 contract
 
 ### Security considerations
 - Wallets will have to maintain a list of Resolver Interface Keys they support, and which name-resolving contracts they consider trustworthy, and display addresses as described in `0x8000` when the provided name-resolving contract is not contained in the list. Said list MAY be updateable by the user.
+
+## `0x0000` : single-word 48-bit EVM chainids, no human-readable name resolution
+This encoding is meant to be the shortest possible way to encode most EVM addresses
+
+### Supported chains
+EVM chains with a chainid shorter than 48 bits (which potentially rules out chainids chosen to comply with ERC-7785)
+
+### Machine-address format
+
+```
+MSB                                                            LSB
+0x0000000000000000000000000000000000000000000000000000000000000000
+  ^^^^------------------------ 255-240 Interoperable Address version
+      ^^^^^^^^ --------------- 239-208 Checksum
+              ^^^^^^^^^^^^
+                \------------- 207-160 Chainid
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                            \- 159-0   Address
+```
+
+`Interoperable Address version`
+: Always `0x0000`
+
+`Checksum`
+: Computed as described in [Appendix D](#appendix-d-checksum-computation)
+
+`Chainid`
+: `uint48` containing the chainId for the target chain
+
+`Address`
+: Native EVM address
+
+### Human-readable name resolution
+The CAIP-2 namespace is to be rendered alongside the `0x`-prefixed EIP-55 address and the checksum
+
+```
+<address>@<CAIP-2 namespace>#<checksum>
+```
+
+### Examples:
+Machine address
+: 
+```
+MSB                                                            LSB
+0x0000618ad0d1000000000001D8DA6BF26964AF9D7EED9E03E53415D37AA96045
+  ^^^^------------------------ 255-240 Interoperable Address version
+      ^^^^^^^^ --------------- 239-208 Checksum
+              ^^^^^^^^^^^^
+                \------------- 207-160 Chainid
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                            \- 159-0   Address
+```
+
+Human-readable name
+: `0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045#6164da10@eip155:1#618ad0d1`
+
+## `0x0001` : Compact format, ENSIP-11+ERC-3770 name resolution 
+The binary representation is identical to the format above, with the exception that the version number is different, indicating the intent for the chain to be displayed using the ERC-3770 shortname and the address to be displayed following mainnet's ENS deployment and ENSIP-11
+
+### Supported chains
+Chain must be listed on ethereum-lists/chains on top of the restrictions of `0x0000`.
+
+### Machine-address format
+Same as `0x0000`, with `0x0001` version
+
+### Examples:
+Machine address
+: 
+```
+MSB                                                            LSB
+0x0001618ad0d1000000000001D8DA6BF26964AF9D7EED9E03E53415D37AA96045
+  ^^^^------------------------ 255-240 Interoperable Address version
+      ^^^^^^^^ --------------- 239-208 Checksum
+              ^^^^^^^^^^^^
+                \------------- 207-160 Chainid
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                            \- 159-0   Address
+```
+
+Human-readable name
+: `vitalik.eth@eth#618AD0D1`
+
+TODO: example on another chain
+
+# Restrictions for future versions
+- The Interoperable Address MUST include an address on a particular chain and MUST also specify on which chain said address exists, fully defining a target address. A version requiring an indirection layer between data contained in the payload and the two fields described above would be in infringement of this restriction.
+- Interoperable Address versions MAY only be able to represent a subset of the CAIP-2 namespaces.
+- Interoperable Address versions MAY define extra fields containing information on how to display the addresses.
+- The most significant version bit is reserved to mean an address complies with the Interoperable Long Format, described in Interoperable Address version `0x8000`.
+- The second-most significant version bit is reserved to mean the payload includes information on how to display the address to users, but is not normative about how that information is to be encoded. An example of this is provided in Interoperable Address version `0xC000`.
+
+# Requirements for wallet software
+- Wallet software MUST perform all relevant pre-validations, including verifying the checksum, and report any errors to the user. Wallets MAY reject an interoperable address solely on the basis of these checks failing.
+
+# Encoding considerations
+- On-chain actors, such as smart contracts, MUST always receive and return the machine addresses as byte array.
+- Off-chain actors, such as wallets, MAY use the blockchain-native byte array representation, or, where practical MAY alternatively use base64 [^2] as defined in RFC-4648 to encode the former.
+- Users SHOULD NOT be shown the base64 or binary representations, instead, they should be shown the intended human-readable name or, in cases where that is not possible, falling back to interpreting it as Interoperable Address version `0x8000`.
+
+[^2]: Base64 was chosen since it is a more widely implemented standard than base58, and since machine addresses are not to be directly displayed to the user, the collision-avoidance reasons in favor of base58 do not apply
+
+# Compatibility with other public-key sharing standards
+
+## W3C DID
+TODO
 
 # Appendix A: Binary encoding of CAIP-2 blockchain id
 First two bytes are the binary representation of CAIP-2 namespace (see table below), rest are the CAIP-2 reference, whose encoding is namespace-specific and defined below.
