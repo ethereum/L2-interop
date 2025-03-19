@@ -10,7 +10,7 @@ This document outlines the required properties for existing interoperability tra
 # Chain-Specific Addresses
 
 L2s and interconnected chains complicate how we identify accounts and targets for transactions. This becomes clear when looking at common scenarios:
-* The same address on different chains may represent completely different entities, or in some cases, may not exist at all.
+* The same address on different chains may represent completely different entities, or in some cases, may not _exist_ at all.
 * Different addresses across chains representing the same logical entity.
 
 From the integration perspective, we can separate cross-chain identification into two distinct concerns:
