@@ -2,9 +2,9 @@
 
 Ethereum has a long history of enabling the creation of interchangeable assets, most of which follow an ERC standard. Typically, asset creation converge into one of these three well-established standards:
 
-- [ERC-20](https://eips.ethereum.org/EIPS/eip-20): The most widely used standard for fungible tokens, defininf a set of functions that enable transfers, approvals and balance tracking.
+- [ERC-20](https://eips.ethereum.org/EIPS/eip-20): The most widely used standard for fungible tokens, defining a set of functions that enable transfers, approvals and balance tracking.
 - [ERC-721](https://eips.ethereum.org/EIPS/eip-721): The standard for non-fungible tokens, ensuring uniqueness and ownership tracking.
-- [ERC-1155](https://eips.ethereum.org/EIPS/eip-1155): A multi-token standard that supports both fungible and non-fungible tokens winthin a single contract, optimizing batch transgers and reducing gas costs.
+- [ERC-1155](https://eips.ethereum.org/EIPS/eip-1155): A multi-token standard that supports both fungible and non-fungible tokens within a single contract, optimizing batch transfers and reducing gas costs.
 
 These standards define how an asset is structured, including its fundamental properties and fungibility rules. However, they do not specify how assets should function in a multi-chain environment. To address this, various standards and frameworks have been proposed over time.
 
@@ -49,7 +49,7 @@ Layer 2s and sidechains commonly implement canonical bridges, which generally op
 
 ## Others
 
-Other teams have chosen to implement fully independent token frameworks and bridging mechanisms. The most notable example is the Bridged USDC Standard and native USDC with CCTP.
+Other teams have chosen to implement fully independent token frameworks and bridging mechanisms. The most notable examples are the Bridged USDC Standard and native USDC transferred via CCTP.
 
 # ERC-721-Compatible Standards and Frameworks
 [WIP].

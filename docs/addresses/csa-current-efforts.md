@@ -1,6 +1,6 @@
 # Chain-specific addresses
 
-A core challenge in Ethereum's multichain landscape is disambiguating addresses across L2s, L3s, Ln, and other EVM ecosystems. In this context, an address by itself does not provide enough information to determine which chain it belongs to and may even differ in its code content (in the case of smart contracts). For this reason, the introduction of chain identifiers and human-readable labels aims to simplify the cross-chain UX.
+A core challenge in Ethereum's multichain landscape is disambiguating addresses across L2s, L3s, Ln, and other EVM ecosystems. In this context, an address by itself does not provide enough information to determine which chain it belongs to, and in the case of smart contracts, its code content may even differ. For this reason, the introduction of chain identifiers and human-readable labels aims to simplify the cross-chain UX.
 
 # Existing efforts
 
@@ -10,7 +10,7 @@ A core challenge in Ethereum's multichain landscape is disambiguating addresses 
 
 ## CAIP-10: Account ID Specification
 
-[CAIP-10](https://github.com/ChainAgnostic/CAIPs/blob/main/CAIPs/caip-10.md) is a chain-agnostic standard that defines a way to identify an account on any blockchain that accomplies with [CAIP-2](https://github.com/ChainAgnostic/CAIPs/blob/main/CAIPs/caip-2.md) (e.g. `eip155:1:0xAbC...123` for Ethereum mainnet). It is not neccessarily intended to be human-friendly, but rather serves as an universal reference for multi-chain tooling (e.g. Wallet Connect).
+[CAIP-10](https://github.com/ChainAgnostic/CAIPs/blob/main/CAIPs/caip-10.md) is a chain-agnostic standard that defines a way to identify an account on any blockchain that accomplies with [CAIP-2](https://github.com/ChainAgnostic/CAIPs/blob/main/CAIPs/caip-2.md), such as `eip155:1:0xAbC...123` for Ethereum mainnet. It is not neccessarily intended to be human-friendly, but rather serves as an universal reference for multi-chain tooling like Wallet Connect.
 
 ## ERC-7828: Chain-specific Addresses using ENS
 
@@ -18,7 +18,7 @@ A core challenge in Ethereum's multichain landscape is disambiguating addresses 
 
 ## ENSIP-9: Multichain Address Resolution
 
-[ENSIP-9](https://github.com/ensdomains/ensips/blob/master/ensips/9.md) introduces a unified way for ENS resolvers to store and return addresses for different blockchains by overloading the `addr` function. Rather than proposing a textual format like `chain:address`, ENSIP-9 leverage from coin types (following [SLIP-0044](https://github.com/satoshilabs/slips/blob/master/slip-0044.md)). This allows resolvers to identify each blockchain by its unique coin type and store the address in its native binary form (such as 20-byte hex for Ethereum, base58-decoded bytes for Bitcoin, etc).
+[ENSIP-9](https://github.com/ensdomains/ensips/blob/master/ensips/9.md) introduces a unified way for ENS resolvers to store and return addresses for different blockchains by overloading the `addr` function. Rather than proposing a textual format like `chain:address`, ENSIP-9 leverage from coin types following [SLIP-0044](https://github.com/satoshilabs/slips/blob/master/slip-0044.md). This allows resolvers to identify each blockchain by its unique coin type and store the address in its native binary form such as 20-byte hex for Ethereum, base58-decoded bytes for Bitcoin.
 
 ### ENSIP-11: EVM compatible Chain Address Resolution
 
@@ -26,11 +26,11 @@ A core challenge in Ethereum's multichain landscape is disambiguating addresses 
 
 ## Comparison
 
-The existing approaches to chain-specific addresses represent an evolution in thinking about cross-chain identification rather than competing solutions. Some standards builds upon lessons learned from previous implementations while other targets other aspects or they could built on top of.
+The existing approaches to chain-specific addresses represent an evolution in thinking about cross-chain identification rather than competing solutions. Some standards build upon lessons learned from previous implementations, while other target other aspects or build on top of them.
 
 | **Feature** | ERC-3770 | CAIP-10 | ERC-7828 | ENSIP-9/ENSIP-11 |
 | --- | --- | --- | --- | --- |
-| **Scope** | Primarily a UI/UX layer standard for human-readable prefixes | A universal account identifier format (machine-readable) for all blockchains | On-chain naming integration with ENS (for chain names and addresses), EVM-focused | ENS resolver-level standards for storing/retrieving multi-chain addresses |
+| **Scope** | Primarily a UI/UX layer standard for human-readable prefixes | A universal account identifier format (machine-readable) for all blockchains | On-chain naming integration with ENS for chain names and addresses, EVM-focused | ENS resolver-level standards for storing/retrieving multi-chain addresses |
 | **Status** | Draft (Fully defined) | Final (Fully defined) | Draft (Incomplete) | Final/Draft |
 | **Format Example** | `chain:address` | `chain_namespace:chain_reference:address` | `address:chain.eth` or `address@chain.eth` | Still uses typical `.eth` format |
 | **Human Readability (_best-case scenario_)** | Medium | Medium | High | High (from typical ENS format) | 

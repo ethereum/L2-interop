@@ -10,7 +10,7 @@ Intents are also considered a proper solution to minimize the consequences of li
 
 [ERC-7683](https://github.com/ethereum/ERCs/blob/master/ERCS/erc-7683.md) proposes a standard API for cross-chain value-transfer systems. A participant called a filler fulfills intents in the destination initiated by users and is paid out through a settlement system. Users are protected since their funds are escrowed in the origin chain and are released when the action is verified, commonly through a message passed and validated.
 
-A CrossChainOrder is initiated (gasless or not gasless) and is resolved even when partitioned into several "legs." Note that the standard does not impose an opinion on the validation mechanism used to verify when an intent is completed.
+A CrossChainOrder is initiated (gasless or not gasless) and is resolved even when partitioned into several "legs". Note that the standard does not impose an opinion on the validation mechanism used to verify when an intent is completed.
 
 For a gasless cross-chain Flow:
 
@@ -60,7 +60,7 @@ sequenceDiagram
     DestinationSettler->>DestinationSettler: Validates & finalizes fill
 ```
 
-This standard intentionally does not prescribe the specifics of final settlement logic or how cancellations (e.g., revoking an unfilled order) should be handled. Implementations may choose to use any cross-chain messaging system.
+This standard intentionally does not prescribe the specifics of final settlement logic or how cancellations like revoking an unfilled order should be handled. Implementations may choose to use any cross-chain messaging system.
 
 ## Intents with Atomic Swaps
 

@@ -1,6 +1,6 @@
 # Atomic Swaps with Local Verification
 
-This proposal introduces a mechanism for achieving asset interoperability between Ethereum L2s (and beyond) using Atomic Swaps. The approach does not require a cross-chain messaging protocol, does not introduce new trust assumptions, and remains open and permissionless for any network to participate. It leverages an enhanced version of HTLCs (PreHTLC) in conjunction with recent advancements in local verification techniques, such as running a light client in the browser (e.g., Helios), to achieve two primary objectives:
+This proposal introduces a mechanism for achieving asset interoperability between Ethereum L2s and beyond using Atomic Swaps. The approach does not require a cross-chain messaging protocol, does not introduce new trust assumptions, and remains open and permissionless for any network to participate. It leverages an enhanced version of HTLCs (PreHTLC) in conjunction with recent advancements in local verification techniques, such as running a light client in the browser (e.g., Helios), to achieve two primary objectives:
 
 - Trustless – Users should be able to transfer assets between chains without ever losing control of their funds.
 - Permissionless – Networks should be able to join the protocol without approvals or gatekeepers.
@@ -9,9 +9,9 @@ This proposal introduces a mechanism for achieving asset interoperability betwee
 
 PreHTLC introduces three key improvements over [traditional HTLCs](https://en.bitcoin.it/wiki/Hash_Time_Locked_Contracts):  
 
-- Delegated secret management – The Solver is responsible for managing secrets, reducing operational complexity for users.  
-- Multiple Solver selection – Users can designate multiple Solvers to fulfill the transaction, mitigating Solver liveness risks.  
-- Incentive alignment – A reward/slash mechanism ensures that Solvers are economically incentivized to execute transactions promptly.  
+- Delegated secret management – The solver is responsible for managing secrets, reducing operational complexity for users.  
+- Multiple solver selection – Users can designate multiple solvers to fulfill the transaction, mitigating the solver liveness risks.  
+- Incentive alignment – A reward/slash mechanism ensures that solvers are economically incentivized to execute transactions promptly.  
 
 This document does not exhaustively cover all [edge cases](https://docs.train.tech/protocol-spec/edge-cases) and [implementation details](https://docs.train.tech) but instead provides a high-level overview of the core process.
 
@@ -32,9 +32,9 @@ sequenceDiagram
     P1->>SC: addLock(hashlock)
     SC-->>P2: TokenLockAdded
     P2->>SC: redeem(secret)
-    SC-->>P1: User Funds Recieved 
+    SC-->>P1: User Funds Received 
     P2->>DC: redeem(secret)
-    DC-->>P2: Solver Funds Recieved
+    DC-->>P2: Solver Funds Received
 ```
 
 The following outlines the end-to-end execution when Alice transfers 1 ETH from Starknet to Optimism.  
@@ -42,13 +42,13 @@ The following outlines the end-to-end execution when Alice transfers 1 ETH from 
 ### 1. Transaction initiation
 
 - Alice accesses the Bridge dApp, connects her wallet, and selects the Starknet → Optimism transfer route.  
-- The dApp queries the Solver Discovery contract to retrieve a list of available Solvers supporting the route.  
+- The dApp queries the solver discovery contract to retrieve a list of available Solvers supporting the route.  
 - Alice submits a commit transaction on Starknet, locking 1 ETH and specifying the set of Solvers.  
 
 At this point, the locked funds are subject to one of two conditions:  
 
 - A `Hashlock` is added once the auction winner is determined.  
-- If no Solver successfully acts on this transaction before the `Timelock` expires, Alice can reclaim her funds.  
+- If no solver successfully acts on this transaction before the `Timelock` expires, Alice can reclaim her funds.  
 
 ### 2. Solver selection via Auction
 
@@ -69,7 +69,7 @@ The security of the exchange relies on this step, where the dApp retrieves the `
 
 The worst-case scenario occurs when all of the following happen simultaneously:
 
-- There is no Light Client for the destination network.
+- There is no light client for the destination network.
 - Only a single RPC provider is available for that network.
 - This single RPC provider is also the solver matched with the user.
 
