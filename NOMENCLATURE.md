@@ -39,14 +39,14 @@ This document defines the common terminology and conventions to be used across a
 ## Messaging
 
 - **Message**: Information transmitted between chains.
-  - **`send`**: The act of marking information on the origin chain to be transmitted to another chain(s). Functions in existing implementations are tipically named as `sendMessage` or others.
+  - **`send`**: The act of marking information on the origin chain to be transmitted to another chain(s). Functions in existing implementations are typically named as `sendMessage` or others.
   - **Aggregation**: Combining multiple cross-chain messages (possibly from multiple origin chains) to finalize them on the destination chain in a single transaction or proof.
   - **`receive`**: Used to denote the act of receiving a message. Depending on the context, receiving a message may have its own flow or involve multiple steps. Functions in existing implementations are tipically named as `receiveMessage`, `relayMessage`, `validateMessage`, `executeMessage` or others.
 - **`Metadata`**: Information about the message (sender, receiver, nonce, etc.)
-  - **`ChainId`**: Referes the chain identifier. Existing implementations might refer to it as "domain" instead of "chain," or simply as the destination.
-- **`Payload`**: The actual data orinstructions being transmitted.
+  - **`ChainId`**: Refers to the chain identifier. Existing implementations might refer to it as "domain" instead of "chain," or simply as the destination.
+- **`Payload`**: The data or instructions being transmitted.
 - **Verification**: The process of validating cross-chain messages.
-- **Push-based**: A full cross-chain transmission lifecycle (including destination execution) can be arranged by a transaction on the origin chain, typically relying on in-protocol methods or third-party relayers.
+- **Push-based**: A full cross-chain transmission lifecycle (including destination execution) can be arranged by a transaction on the origin chain, it typically relies on in-protocol methods or third-party relayers.
 - **Pull-based**: Requires a user (or application) to complete the lifecycle on the destination chain (so-called “self-relaying”).
  
 
@@ -58,9 +58,9 @@ This document defines the common terminology and conventions to be used across a
 ## Updates:
 
 This document should be updated when:
-1. New standards introduce novel concepts
-2. Existing terminology requires clarification
-3. Community feedback suggests improvements
+1. New standards introduce novel concepts.
+2. The existing terminology requires clarification.
+3. Community feedback suggests improvements.
 
 ## Acknowledgments
 
