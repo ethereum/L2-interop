@@ -30,7 +30,7 @@ Name-resolving contract
 Word 0 Is the only word which will be common to all versions, and is defined as follows:
 ```
 MSB                                                            LSB
-0x0000000000000000000000000000000000000000000000000000000000000000
+0xXXXXYYYYYYYYZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZ
   ^^^^------------------------ 255-240 Interoperable Address version
       ^^^^^^^^ --------------- 239-208 Checksum
               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -38,8 +38,6 @@ MSB                                                            LSB
 ```
 
 No length restriction is placed on how many more words can an Interoperable Address span. Different versions of the standard can define uses for extra words and the 208 reserved bits.
-
-TODO: consider making this format 31 bytes and define standard ways to pad it so it can be _saved_ in a `bytes` array taking only one word (ABI representation would not be significantly cheaper though).
 
 # Human-readable name format definition
 
@@ -57,7 +55,7 @@ TODO: consider making this format 31 bytes and define standard ways to pad it so
 
 # Interoperable Address version definitions
 
-## `0x8000`: Standard Long Format: arbitrary length addresses, CAIP-10 display format
+## `0x8000`: Standard Long Format: arbitrary length addresses, CAIP-10 compatible display format
 
 ### Machine-address format
 
@@ -178,16 +176,16 @@ MSB                                                            LSB
 Second word (second field): target address' chainid
 ```
 MSB                                                            LSB
-0x0100000000000000000000000000000000000000000000000000000000000002
-  ^^----------------------------------------------------------------- 255-249 bytes array payload
-    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ ---- 9-249   padding
-                                                                ^^ -- 0-8    2*1 (payload length)
+0x000001000000000000000000000000000000000000000000000000000000000C
+  ^^^^^^------------------------------------------------------------- 255-208 bytes array payload
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ ---- 9-207   padding
+                                                                ^^ -- 0-8     2*6 (payload length)
 ```
 
 Third word (third field): target address
 ```
 MSB                                                            LSB
-0XD8DA6BF26964AF9D7EED9E03E53415D37AA96045000000000000000000000028
+0xD8DA6BF26964AF9D7EED9E03E53415D37AA96045000000000000000000000028
   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^  ------------------------- 255-97 bytes array payload
                                           ^^^^^^^^^^^^^^^^^^^^^^ ---- 9-96   padding
                                                                 ^^ -- 0-8    2*20 (payload length)
@@ -196,16 +194,16 @@ MSB                                                            LSB
 Fourth word (fourth field): name resolving contract's chainid
 ```
 MSB                                                            LSB
-0x0100000000000000000000000000000000000000000000000000000000000002
-  ^^----------------------------------------------------------------- 255-249 bytes array payload
-    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ ---- 9-249   padding
-                                                                ^^ -- 0-8    2*1 (payload length)
+0x000001000000000000000000000000000000000000000000000000000000000C
+  ^^^^^^------------------------------------------------------------- 255-208 bytes array payload
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ ---- 9-207   padding
+                                                                ^^ -- 0-8     2*6 (payload length)
 ```
 
 Fifth word (fifth field): name resolving contract's address
 ```
 MSB                                                            LSB
-0X00000000000C2E074EC69A0DFB2997BA6C7D2E1E000000000000000000000028
+0x00000000000C2E074EC69A0DFB2997BA6C7D2E1E000000000000000000000028
   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^  ------------------------- 255-97 bytes array payload
                                           ^^^^^^^^^^^^^^^^^^^^^^ ---- 9-96   padding
                                                                 ^^ -- 0-8    2*20 (payload length)
@@ -269,7 +267,7 @@ MSB                                                            LSB
 ```
 
 Human-readable name
-: `0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045#6164da10@eip155:1#618ad0d1`
+: `0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045#6164da10@eip155:1#618AD0D1`
 
 ## `0x0001` : Compact format, ENSIP-11+ERC-3770 name resolution 
 The binary representation is identical to the format above, with the exception that the version number is different, indicating the intent for the chain to be displayed using the ERC-3770 shortname and the address to be displayed following mainnet's ENS deployment and ENSIP-11
@@ -311,15 +309,11 @@ TODO: example on another chain
 
 # Encoding considerations
 - On-chain actors, such as smart contracts, MUST always receive and return the machine addresses as byte array.
+- On-chain actors, such as smart contracts, MAY only accept canonical `0x8000` address versions, with off-chain actors being responsible over converting them to said format.
 - Off-chain actors, such as wallets, MAY use the blockchain-native byte array representation, or, where practical MAY alternatively use base64 [^2] as defined in RFC-4648 to encode the former.
 - Users SHOULD NOT be shown the base64 or binary representations, instead, they should be shown the intended human-readable name or, in cases where that is not possible, falling back to interpreting it as Interoperable Address version `0x8000`.
 
 [^2]: Base64 was chosen since it is a more widely implemented standard than base58, and since machine addresses are not to be directly displayed to the user, the collision-avoidance reasons in favor of base58 do not apply
-
-# Compatibility with other public-key sharing standards
-
-## W3C DID
-TODO
 
 # Appendix A: Binary encoding of CAIP-2 blockchain id
 First two bytes are the binary representation of CAIP-2 namespace (see table below), rest are the CAIP-2 reference, whose encoding is namespace-specific and defined below.
