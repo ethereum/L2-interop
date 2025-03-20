@@ -1,7 +1,7 @@
 Introducing: Interoperable Addresses
 ====
 
-*Specs in the formal, normative format are written [here](/specs/addresses/cross-chain-interoperable-addresses-spec.md)*.
+*Specs in the formal, normative format can be found [here](/specs/addresses/cross-chain-interoperable-addresses-spec.md)*.
 
 Interoperable Addresses is a standard defining address formats for a multi-chain world.
 
@@ -9,37 +9,37 @@ They contain the following information:
 
 ```solidity
     struct InteroperableAddress {
-        bytes chainId;
-        bytes address_;
-        bytes nameContractChain;
-        bytes nameContractAddress;
+        bytes targetChainId;
+        bytes targetAddress;
+        bytes resolverChainId;
+        bytes resolverAddress;
     }
 ```
 
 Let's take an example:
 
 <pre>
-InteroperableAddres addy = InteroperableAddress({
-    chainId: hex'<span style="color:green">0000</span><span style="color:orange">01</span>',
-    address_: hex'<span style="color:blue">D8DA6BF26964AF9D7EED9E03E53415D37AA96045</span>',
-    nameContractChain: hex'<span style="color:black">0000<span style="color:pink">01</span>',
-    nameContractAddress: hex'<span style="color:magenta">00000000000C2E074EC69A0DFB2997BA6C7D2E1E</span>'
+InteroperableAddress addy = InteroperableAddress({
+    targetChainId: hex'<span style="color:green">0000</span><span style="color:orange">01</span>',
+    targetAddress: hex'<span style="color:blue">D8DA6BF26964AF9D7EED9E03E53415D37AA96045</span>',
+    resolverChainId: hex'<span style="color:black">0000<span style="color:pink">01</span>',
+    resolverAddress: hex'<span style="color:magenta">00000000000C2E074EC69A0DFB2997BA6C7D2E1E</span>'
 })
 </pre>
 
 Would be seen by users like this:
 
 <pre>
-    <span style="color:blue">0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045</span>@<span style="color:green">eip:155</span>:<span style="color:orange">1</span>#<span style="color:grey">618AD0D1</span>
+    <span style="color:blue">vitalik.eth</span>@<span style="color:green">eip:155</span>:<span style="color:orange">1</span>#<span style="color:grey">618AD0D1</span>
 </pre>
 
 ...and in memory, it would actually be laid out like this:
 
 <pre>
 C000618AD0D10000000000000000000000000000000000000000000000000001
-<span style="color:green">0000</span><span style="color:orange">01</span><span style="color: grey">0000000000000000000000000000000000000000000000000000000006</span>
+<span style="color:green">0000</span><span style="color:orange">01</span><span style="color: grey">000000000000000000000000000000000000000000000000000000000C</span>
 <span style="color:blue">D8DA6BF26964AF9D7EED9E03E53415D37AA96045</span><span style="color: grey">000000000000000000000028</span>
-<span style="color:black">0000</span><span style="color:pink">01</span><span style="color: grey">0000000000000000000000000000000000000000000000000000000006</span>
+<span style="color:black">0000</span><span style="color:pink">01</span><span style="color: grey">000000000000000000000000000000000000000000000000000000000C</span>
 <span style="color:magenta">00000000000C2E074EC69A0DFB2997BA6C7D2E1E</span><span style="color: grey">000000000000000000000028</span>
 </pre>
 
@@ -71,32 +71,39 @@ But wait! I actually want...
 What some other resolvers look like:
 
 `0x0000`:
-```
+<pre>
 MSB                                                            LSB
-0x0000618ad0d1000000000001D8DA6BF26964AF9D7EED9E03E53415D37AA96045
-  ^^^^------------------------ 255-240 Interoperable Address version
-      ^^^^^^^^ --------------- 239-208 Checksum
+0x<span style="color: red">0000</span><span style="color: green">618ad0d1</span><span style="color: blue">00000000000</span><span style="color: magenta">1D8DA6BF26964AF9D7EED9E03E53415D37AA96045</span>
+  ^^^^------------------------ 255-240 <span style="color: red">Interoperable Address version</span>
+      ^^^^^^^^ --------------- 239-208 <span style="color: green">Checksum</span>
               ^^^^^^^^^^^^
-                \------------- 207-160 Chainid
+                \------------- 207-160 <span style="color: blue">Chainid</span>
                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-                            \- 159-0   Address
-```
+                            \- 159-0   <span style="color: magenta">Address</<span>
+</pre>
 Is represented as:
-`0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045@eip155:1#618AD0D1`
+<pre>
+<span style="color: magenta">0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045</span>@eip155:<span style="color: blue">1</span>#<span style="color: green">618AD0D1</span>
+</pre>
+
+To fit in a single word, it sacrifices:
+* Ability to refer to CAIP-2 namespaces other than eip155 (it's implied by the version number)
+* Ability to represent addresses longer than 20 bytes
+* Ability to refer to chains with chainids longer than 48 bits (rules out ERC-7785)
 
 `0x8000`:
 ```
 MSB                                                          LSB
-0000618AD0D10000000000000000000000000000000000000000000000000000
+8000618AD0D10000000000000000000000000000000000000000000000000000
 ^^^^------------------------ 255-240 Interoperable Address Version
     ^^^^^^^^ --------------- 239-208 Checksum
             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
               \------------- 207-0   not used, always zero
 MSB                                                          LSB
-0100000000000000000000000000000000000000000000000000000000000002
-^^----------------------------------------------------------------- 255-249 bytes array payload
-  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ ---- 9-249   padding
-                                                              ^^ -- 0-8    2*1 (payload length)
+00000100000000000000000000000000000000000000000000000000000000C0
+^^^^^^------------------------------------------------------------- 255-208 bytes array payload
+      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ ---- 9-207   padding
+                                                              ^^ -- 0-8    2*6 (payload length)
 MSB                                                          LSB
 D8DA6BF26964AF9D7EED9E03E53415D37AA96045000000000000000000000028
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^  ------------------------- 255-97 bytes array payload
