@@ -6,6 +6,23 @@ Requires: RFC-4648, ENSIP-11, CAIP-2
 # Abstract
 An extensible way to describe an address specific to one chain which also includes the information to securely condense it into a human-readable name.
 
+# Motivation
+The Ethereum ecosystem is rapidly expanding into a multi-chain environment encompassing L1s, L2s, sidechains, and rollups—some EVM‐compatible, others not. A simple address alone no longer identifies which chain the address belongs to, creating ambiguity for wallets, dApps, and users. At the same time, human‐readable naming (e.g. ENS) is important for usability, but must be deterministically tied to the correct network.
+
+Interoperable Addresses build on insights from previous iterations of ERC-7828 and related discussions, offering a unified format which combines:
+- Binding chain specificity (via explicit chain identifiers) to the raw address,
+- Support for human‐readable naming (through optional resolvers, e.g., ENS), and
+- Checksums for name collision mitigation.
+
+All without adding new trust assumptions beyond what wallets already apply. By bundling chain references, addresses, and optional resolver info into a canonical binary format, wallets can deterministically parse and display addresses, while users benefit from intuitive names.
+In short, this standard aims to:
+- Erase ambiguity by enshrining a deterministic link between chain and address.
+- Remain resolution‐agnostic, supporting various naming services and chain registries.
+- Permit multiple “version” specifications, ensuring future extensibility for different resolution schemes.
+- Provide a stable, machine‐readable binary representation digestible by smart contracts (e.g., via ABI).
+
+These goals make Interoperable Addresses future-proof and user-friendly, enabling trustless, cross-chain workflows in a multi-chain world. The format also seeks to align with existing standards (e.g., CAIP-2, CAIP-10) and embrace diversity of identifier formats.
+
 # Out of scope concerns
 Similarly to CAIP-10, this specification is not concerned with the mapping from a chain id to a network name, which might not be surjective (eg: the case where if there are multiple EIP-155 chains with chain id 8453, which one should we call Base?), regarding that resolution a social-layer problem until a future ERC decides to tackle it. Efforts in that front are tracked in [the chain registries document](../docs/chain-registries.md)
 
