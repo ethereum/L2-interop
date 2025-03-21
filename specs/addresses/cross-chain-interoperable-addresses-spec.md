@@ -24,23 +24,23 @@ In short, this standard aims to:
 These goals make Interoperable Addresses future-proof and user-friendly, enabling trustless, cross-chain workflows in a multi-chain world. The format also seeks to align with existing standards (e.g., CAIP-2, CAIP-10) and embrace diversity of identifier formats.
 
 # Out of scope concerns
-Similarly to CAIP-10, this specification is not concerned with the mapping from a chain id to a network name, which might not be surjective (eg: the case where if there are multiple EIP-155 chains with chain id 8453, which one should we call Base?), regarding that resolution a social-layer problem until a future ERC decides to tackle it. Efforts in that front are tracked in [the chain registries document](../docs/chain-registries.md)
+Similarly to CAIP-10, this specification is not concerned with the mapping from a chain ID to a network name, which might not be surjective (eg: the case where if there are multiple EIP-155 chains with chain ID 8453, which one should we call Base?), regarding that resolution a social-layer problem until a future ERC decides to tackle it. Efforts in that front are tracked in [the chain registries document](../docs/chain-registries.md)
 
 # Definitions
 Interoperable Address
-: A binary payload which includes both the information to unambiguously point to a specific address on a specific chain and a _resolver specification_ which, together with this (and potentially future) ERCs, allows conversion to a human-readable name in a way that requires no further trust assumptions than those the wallet software executing said conversion already operates under.
+: A binary payload which unambiguously identifies a target address and, optionally, a _resolver specification_ which, along with this (and potentially future) ERCs, allows conversion to a human-readable name without requiring further trust assumptions by wallet software.
 
 Human-readable name
-: A string representation of an interoperable address, condensed into something that is to be consumed by humans.
+: A string representation of an interoperable address, meant to be used by humans.
 
 Target address
-: The (address, chainid) pair a particular Interoperable Address points to.
+: The (address, chain ID) pair a particular Interoperable Address points to.
 
 Name-resolving contract
-: A contract where responsibility over converting addresses and/or chainids in a format meant for machine consumption over to parts of a human-readable name.
+: A contract responsible for converting addresses and/or chain IDs from a machine-readable format into parts of a human-readable name.
 
 # Guarantees provided by the standard
-- Any Interoperable Address is trivially convertible to Interoperable Long Format, `0x8000`, making it a canonical representation for users who need to treat them opaquely.
+- Any Interoperable Address is trivially convertible to Interoperable Canonical Format, `0x8000`, making it a canonical representation for users who need to treat them opaquely.
 - Checksums are short enough to be compared by humans, and effectively identify a _target address_ independently of any extra data the address may contain.
 
 # Binary Format definition
@@ -67,17 +67,17 @@ No length restriction is placed on how many more words can an Interoperable Addr
 ```
 
 ## Rationale
-- Chain and account fields' syntax is deliberately chosen to be able to express CAIP-2 namespaces and CAIP-10 account ids, with the caveat that no length restriction is placed, so chains with longer address formats or full 256-bit EVM chainids can be represented.
+- Chain and account fields' syntax is deliberately chosen to be able to express CAIP-2 namespaces and CAIP-10 account IDs, with the caveat that no length restriction is placed, so chains with longer address formats or full 256-bit EVM chainids can be represented.
 - Similarly, the account field includes `%` as a valid character to allow for url-encoding of any other characters.
 
 # Interoperable Address version definitions
 
-## `0x8000`: Standard Long Format: arbitrary length addresses, CAIP-10 compatible display format
+## `0x8000`: Interoperable Canonical Format: arbitrary length addresses, CAIP-10 compatible display format
 
 ### Machine-address format
 
 #### First word
-Does not make use of reserved bits
+No reserved bits are used. They MUST be set to zero, to ensure canonicity of addresses.
 ```
 MSB                                                            LSB
 0x8000XXXXXXXX0000000000000000000000000000000000000000000000000000
@@ -88,7 +88,7 @@ MSB                                                            LSB
 ```
 
 #### Second field
-Serializes the chainid as described in [Appendix A](#appendix-a-binary-encoding-of-caip-2-blockchain-id) and encodes it into a byte array as described in [Appendix C](#appendix-c-short-encoding-of-byte-arrays). It is a _field_ and not a _word_, since it may take up more than one word
+Serializes the chain ID as described in [Appendix A](#appendix-a-binary-encoding-of-caip-2-blockchain-id) and encodes it into a byte array as described in [Appendix C](#appendix-c-short-encoding-of-byte-arrays). It is a _field_ and not a _word_, since it may take up more than one word.
 
 #### Third field
 Serializes the address as described in [Appendix A](#appendix-a-binary-encoding-of-caip-2-blockchain-id) and encodes it into a byte array as described in [Appendix C](#appendix-c-short-encoding-of-byte-arrays). It is a _field_ and not a _word_, since it may take up more than one word, and may not start at the third word boundary if the second field takes up more than one word.
@@ -135,7 +135,7 @@ MSB                                                            LSB
 
 TODO: example with multi-word fields
 
-## `0xC000`: Standard Long Format With Resolver Info: arbitrary length addresses, arbitrary length name-resolving contract specification
+## `0xC000`: Interoperable Canonical Format With Resolver Info: arbitrary length addresses, arbitrary length name-resolving contract specification
 
 ### Machine-address format
 
@@ -153,13 +153,13 @@ The Resolver Interface Key defines how wallets should interact with the smart co
 Said contract MAY also be responsible for naming the chain on which the target address resides as well as providing a human-readable name for the address, when ERC-7785 or similar standards reach production.
 
 #### Second field
-Serializes the chainid of the target address  as described in [Appendix A](#appendix-a-binary-encoding-of-caip-2-blockchain-id) and encodes it into a byte array as described in [Appendix C](#appendix-c-short-encoding-of-byte-arrays).
+Serializes the chain ID of the target address  as described in [Appendix A](#appendix-a-binary-encoding-of-caip-2-blockchain-id) and encodes it into a byte array as described in [Appendix C](#appendix-c-short-encoding-of-byte-arrays).
 
 #### Third field
 Serializes the address of the target address as described in [Appendix A](#appendix-a-binary-encoding-of-caip-2-blockchain-id) and encodes it into a byte array as described in [Appendix C](#appendix-c-short-encoding-of-byte-arrays).
 
 #### Fourth field
-Serializes the chainid where the name-resolving contract is located as described in [Appendix A](#appendix-a-binary-encoding-of-caip-2-blockchain-id) and encodes it into a byte array as described in [Appendix C](#appendix-c-short-encoding-of-byte-arrays).
+Serializes the chain ID where the name-resolving contract is located as described in [Appendix A](#appendix-a-binary-encoding-of-caip-2-blockchain-id) and encodes it into a byte array as described in [Appendix C](#appendix-c-short-encoding-of-byte-arrays).
 
 #### Fifth field
 Serializes the address of the name-resolving contract as described in [Appendix A](#appendix-a-binary-encoding-of-caip-2-blockchain-id) and encodes it into a byte array as described in [Appendix C](#appendix-c-short-encoding-of-byte-arrays).
@@ -190,7 +190,7 @@ MSB                                                            LSB
               \--------------- 207-0   Resolver Interface Key
 ```
 
-Second word (second field): target address' chainid
+Second word (second field): target address' chain ID
 ```
 MSB                                                            LSB
 0x000001000000000000000000000000000000000000000000000000000000000C
@@ -208,7 +208,7 @@ MSB                                                            LSB
                                                                 ^^ -- 0-8    2*20 (payload length)
 ```
 
-Fourth word (fourth field): name resolving contract's chainid
+Fourth word (fourth field): name resolving contract's chain ID
 ```
 MSB                                                            LSB
 0x000001000000000000000000000000000000000000000000000000000000000C
@@ -231,11 +231,11 @@ TODO: example with other ENSIP-11 contract
 ### Security considerations
 - Wallets will have to maintain a list of Resolver Interface Keys they support, and which name-resolving contracts they consider trustworthy, and display addresses as described in `0x8000` when the provided name-resolving contract is not contained in the list. Said list MAY be updateable by the user.
 
-## `0x0000` : single-word 48-bit EVM chainids, no human-readable name resolution
+## `0x0000` : single-word 48-bit EVM chain IDs, no human-readable name resolution
 This encoding is meant to be the shortest possible way to encode most EVM addresses
 
 ### Supported chains
-EVM chains with a chainid shorter than 48 bits (which potentially rules out chainids chosen to comply with ERC-7785)
+EVM chains with a chain ID shorter than 48 bits (which potentially rules out chain IDs chosen to comply with ERC-7785)
 
 ### Machine-address format
 
@@ -245,7 +245,7 @@ MSB                                                            LSB
   ^^^^------------------------ 255-240 Interoperable Address version
       ^^^^^^^^ --------------- 239-208 Checksum
               ^^^^^^^^^^^^
-                \------------- 207-160 Chainid
+                \------------- 207-160 Chain ID
                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
                             \- 159-0   Address
 ```
@@ -256,8 +256,8 @@ MSB                                                            LSB
 `Checksum`
 : Computed as described in [Appendix D](#appendix-d-checksum-computation)
 
-`Chainid`
-: `uint48` containing the chainId for the target chain
+`ChainID`
+: `uint48` containing the chain ID for the target chain
 
 `Address`
 : Native EVM address
@@ -278,7 +278,7 @@ MSB                                                            LSB
   ^^^^------------------------ 255-240 Interoperable Address version
       ^^^^^^^^ --------------- 239-208 Checksum
               ^^^^^^^^^^^^
-                \------------- 207-160 Chainid
+                \------------- 207-160 chain ID
                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
                             \- 159-0   Address
 ```
@@ -304,7 +304,7 @@ MSB                                                            LSB
   ^^^^------------------------ 255-240 Interoperable Address version
       ^^^^^^^^ --------------- 239-208 Checksum
               ^^^^^^^^^^^^
-                \------------- 207-160 Chainid
+                \------------- 207-160 chain ID
                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
                             \- 159-0   Address
 ```
@@ -315,25 +315,26 @@ Human-readable name
 TODO: example on another chain
 
 # Restrictions for future versions
-- The Interoperable Address MUST include an address on a particular chain and MUST also specify on which chain said address exists, fully defining a target address. A version requiring an indirection layer between data contained in the payload and the two fields described above would be in infringement of this restriction.
+- The Interoperable Address MUST include an address and specify the chain it belongs to, fully defining a target address. Any version that adds an indirection layer between payload data and these two fields would violate this restriction.
 - Interoperable Address versions MAY only be able to represent a subset of the CAIP-2 namespaces.
 - Interoperable Address versions MAY define extra fields containing information on how to display the addresses.
-- The most significant version bit is reserved to mean an address complies with the Interoperable Long Format, described in Interoperable Address version `0x8000`.
+- The most significant version bit is reserved to mean an address complies with the Interoperable Canonical Format, described in Interoperable Address version `0x8000`.
 - The second-most significant version bit is reserved to mean the payload includes information on how to display the address to users, but is not normative about how that information is to be encoded. An example of this is provided in Interoperable Address version `0xC000`.
 
 # Requirements for wallet software
-- Wallet software MUST perform all relevant pre-validations, including verifying the checksum, and report any errors to the user. Wallets MAY reject an interoperable address solely on the basis of these checks failing.
+- Wallet software MUST perform all relevant pre-validations, including verifying the checksum, and report any errors to the user.
+- Wallets MAY reject an interoperable address solely on the basis of the checks above failing.
 
 # Encoding considerations
 - On-chain actors, such as smart contracts, MUST always receive and return the machine addresses as byte array.
 - On-chain actors, such as smart contracts, MAY only accept canonical `0x8000` address versions, with off-chain actors being responsible over converting them to said format.
 - Off-chain actors, such as wallets, MAY use the blockchain-native byte array representation, or, where practical MAY alternatively use base64 [^2] as defined in RFC-4648 to encode the former.
-- Users SHOULD NOT be shown the base64 or binary representations, instead, they should be shown the intended human-readable name or, in cases where that is not possible, falling back to interpreting it as Interoperable Address version `0x8000`.
+- Users SHOULD NOT be shown the base64 or binary representations. Instead, they should be presented with the intended human-readable name or, in cases where that is not possible, wallet software MUST fall back to interpreting it as an Interoperable Address version `0x8000`.
 
-[^2]: Base64 was chosen since it is a more widely implemented standard than base58, and since machine addresses are not to be directly displayed to the user, the collision-avoidance reasons in favor of base58 do not apply
+[^2]: Base64 was chosen since it is a more widely implemented standard than base58. Additionally, since machine addresses are not to be directly displayed to the user, the collision-avoidance reasons in favor of base58 do not apply
 
-# Appendix A: Binary encoding of CAIP-2 blockchain id
-First two bytes are the binary representation of CAIP-2 namespace (see table below), rest are the CAIP-2 reference, whose encoding is namespace-specific and defined below.
+# Appendix A: Binary encoding of CAIP-2 blockchain ID
+The first two bytes are the binary representation of CAIP-2 namespace (see table below), while the remaining bytes correspond to the CAIP-2 reference, whose encoding is namespace-specific and defined below.
 
 ## CAIP-2 namespaces' binary representation table
 
@@ -343,23 +344,28 @@ First two bytes are the binary representation of CAIP-2 namespace (see table bel
 | bip122    | `0x0001`   |
 
 ### eip155
-The bare `chainid` encoded as a `uint` of the necessary amount of bytes will be used [^1]. This allows for most of existing EVM chainids to fit inside one EVM word.
+The bare `chainid` encoded as a `uint` of the necessary amount of bytes will be used [^1]. This allows for most of existing EVM chain IDs to fit inside one EVM word.
 
-[^1]: This makes it possible to represent some chains using the full word as their chainid, which CAIP-2 does not support since the set of values representable with 32 `a-zA-Z0-9` characters has less than `type(uint256).max` elements. This is done in an effort to support chains whose id is the output of `keccak256`, as proposed in ERC-7785.
+[^1]: This makes it possible to represent some chains using the full word as their chainid, which CAIP-2 does not support since the set of values representable with 32 `a-zA-Z0-9` characters has less than `type(uint256).max` elements. This is done in an effort to support chains whose ID is the output of `keccak256`, as proposed in ERC-7785.
 
 #### Examples
 Ethereum Mainnet: `0x000001` (1, encoded as uint8)
+
 Optimism Mainnet: `0x00000A` (10, encoded as uint8)
+
 Ethereum Sepolia: `0x0000aa36a7` (11155111, encoded as uint24)
 
 ### bip122
 The genesis/fork blockhash is to be stored raw, without encoding/decoding from/to base58btc, and without removing any leading zeroes:
 
-Note: CAIP-2 has a 32 character limit on chain references which means converting to them will require truncating the reference, and converting _from_ CAIP-2 to this standard is potentially ambiguous (but converting from actual bip122 to this standard will never be)
+Note: CAIP-2 limits chain references to 32 characters, so converting to it will require truncating the reference, so converting _from_ CAIP-2 to this standard is potentially ambiguous (but converting from actual bip122 to this standard will never be).
 
 #### Examples
-Bitcoin Mainnet: `0x0001000000000019d6689c085ae165831e934ff763ae46a2a6c172b3f1b60a8ce26f`
-Litecoin: `0x000112a765e31ffd4059bada1e25190f6e98c99d9714d334efa41a195a7e7e04bfe2`
+Bitcoin Mainnet
+: `0x0001000000000019d6689c085ae165831e934ff763ae46a2a6c172b3f1b60a8ce26f`
+
+Litecoin
+: `0x000112a765e31ffd4059bada1e25190f6e98c99d9714d334efa41a195a7e7e04bfe2`
 
 # Appendix B: Binary encoding of addresses
 TODO, will be similar to ENSIP-9 and/or CAIP-50
@@ -371,10 +377,10 @@ TODO
 This is a mix between [how bytes and strings are saved into storage](https://docs.soliditylang.org/en/latest/internals/layout_in_storage.html#bytes-and-string) and how ABI encoding works
 
 This arises out of:
-- The need to have the shortest possible representation for EVM addresses.
-- Not having a canonical place to delimit the _start_ of the data (in the case of storage strings, it's the keccak256 hash of the storage slot index).
+- The need for the shortest possible representation of EVM addresses.
+- The absence of a canonical place to delimit the _start_ of the data (in the case of storage strings, this is the keccak256 hash of the storage slot index).
 
-If the data is at most 31 bytes long, the elements are stored in the higher-order bytes (left aligned) and the lowest-order byte stores the value `length * 2`.
+If the data is at most 31 bytes long, the elements are stored in the higher-order bytes (left-aligned) and the lowest-order byte stores the value `length * 2`.
 
 If the data is 32 bytes or longer, the current word stores `length * 2 + 1`, and data follows in the next words, left-aligned and zero-padded.
 
@@ -408,7 +414,7 @@ TODO:
 With the intent of:
 - Maximizing the difficulty of mining checksum collisions
 - Maximize the safety a user gets from knowing the checksum matches
-- Allow maximum flexibility for human-readable names, leveraging the above to make human-readable name collisions permissible
+- Allow maximum flexibility for human-readable names, leveraging the above to make human-readable name collisions permissible.
 
 And considering:
 - Binary payloads will often have their own error-correction mechanisms when in transit (eg: if encoded into a QR code, said QR code will have information redundancy & its own checksum ensuring only valid data can be decoded), so that can safely be deemed out of scope.
@@ -417,14 +423,14 @@ TODO: Considering the above, does it make sense to store the checksum inside the
 We propose a way to serialize the 'abstract' components of an address, ignoring the information on how it should be displayed, to achieve the above: 
 
 ```solidity
-    function getChecksum(bytes2 caip2Namespace, bytes memory chainid, bytes memory address_)
+    function getChecksum(bytes2 caip2Namespace, bytes memory chainId, bytes memory address_)
         internal
         view
         returns (bytes4 checksum)
     {
-        bytes memory fullChainid = bytes.concat(caip2Namespace, chainid);
+        bytes memory fullChainId = bytes.concat(caip2Namespace, chainId);
         // Deliberately abi-encode instead of encode-packed to avoid preimage collisions
-        bytes memory serialized = abi.encode(fullChainid, address_);
+        bytes memory serialized = abi.encode(fullChainId, address_);
         bytes32 hashed = keccak256(serialized);
         checksum = bytes4(hashed);
     }
