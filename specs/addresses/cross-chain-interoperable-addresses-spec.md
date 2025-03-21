@@ -418,8 +418,8 @@ This means access to an arbitrary field in the structure requires a worst-case l
 0011000000000000000000000000000000000000000000000000000000000000
 ```
 
-TODO: 
-- Consider tradeoffs of following a head-tail encoding scheme a la ABI, instead of packing the data right after. It would be possible to pack the (relative to current position? absolute to start of payload?) offset into 16 bytes, and use the remaining 16 bytes for `length * 2 + 1`. (pro of this approach: not possible to add extra data between fields which is invisible to parsers like is possible with abi encoding)
+## Rationale
+With this approach, packing the data right after the word saving its length instead of storing the offset to the data, we don't allow for extra information to be inserted in a way that is not visible to parsers (as is possible with ABI encoding), which allows for the canonicity of encoded addresses.
 
 # Appendix D: checksum computation
 With the intent of:
