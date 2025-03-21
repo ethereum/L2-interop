@@ -53,10 +53,9 @@ Said word is what enables us to make this standard extensible, let's take a clos
 <pre>
 MSB                                                          LSB
 <span style="color: red">C000</span><span style="color:green">6164DA1</span><span style="color:blue">00000000000000000000000000000000000000000000000000001</span>
-^^^^------------------------ 255-240 <span style="color:red">Interoperable Address Version</span>
-    ^^^^^^^^ --------------- 239-208 <span style="color:green">Checksum</span>
-            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-            \--------------- 207-0   <span style="color:blue">Resolver Interface Key</span>
+^^^^-------------------------------------------------------------- 255-240 <span style="color:red">Interoperable Address Version</span>
+    ^^^^^^^^ ----------------------------------------------------- 239-208 <span style="color:green">Checksum</span>
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ - 207-0   <span style="color:blue">Resolver Interface Key</span>
 </pre>
 
 - <span style="color:red">Interoperable Address Version</span>: First two bytes of the payload allows us to discern how we should interpret it, more on this later
@@ -74,12 +73,10 @@ What some other resolvers look like:
 <pre>
 MSB                                                            LSB
 0x<span style="color: red">0000</span><span style="color: green">618ad0d1</span><span style="color: blue">00000000000</span><span style="color: magenta">1D8DA6BF26964AF9D7EED9E03E53415D37AA96045</span>
-  ^^^^------------------------ 255-240 <span style="color: red">Interoperable Address version</span>
-      ^^^^^^^^ --------------- 239-208 <span style="color: green">Checksum</span>
-              ^^^^^^^^^^^^
-                \------------- 207-160 <span style="color: blue">Chainid</span>
-                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-                            \- 159-0   <span style="color: magenta">Address</<span>
+  ^^^^------------------------------------------------------------- 255-240 <span style="color: red">Interoperable Address version</span>
+      ^^^^^^^^----------------------------------------------------- 239-208 <span style="color: green">Checksum</span>
+              ^^^^^^^^^^^^----------------------------------------- 207-160 <span style="color: blue">Chainid</span>
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^- 159-0   <span style="color: magenta">Address</<span>
 </pre>
 Is represented as:
 <pre>
@@ -95,20 +92,19 @@ To fit in a single word, it sacrifices:
 ```
 MSB                                                          LSB
 8000618AD0D10000000000000000000000000000000000000000000000000000
-^^^^------------------------ 255-240 Interoperable Address Version
-    ^^^^^^^^ --------------- 239-208 Checksum
-            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-              \------------- 207-0   not used, always zero
+^^^^-------------------------------------------------------------- 255-240 Interoperable Address Version
+    ^^^^^^^^ ----------------------------------------------------- 239-208 Checksum
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ - 207-0   not used, always zero
 MSB                                                          LSB
 00000100000000000000000000000000000000000000000000000000000000C0
-^^^^^^------------------------------------------------------------- 255-208 bytes array payload
-      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ ---- 9-207   padding
-                                                              ^^ -- 0-8    2*6 (payload length)
+^^^^^^------------------------------------------------------------ 255-208 bytes array payload
+      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ --- 9-207   padding
+                                                              ^^ - 0-8    2*6 (payload length)
 MSB                                                          LSB
 D8DA6BF26964AF9D7EED9E03E53415D37AA96045000000000000000000000028
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^  ------------------------- 255-97 bytes array payload
-                                        ^^^^^^^^^^^^^^^^^^^^^^ ---- 9-96   padding
-                                                              ^^ -- 0-8    2*20 (payload length)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^  ------------------------ 255-97 bytes array payload
+                                        ^^^^^^^^^^^^^^^^^^^^^^ --- 9-96   padding
+                                                              ^^ - 0-8    2*20 (payload length)
 ```
 Is represented as:
 `0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045@eip155:1#618AD0D1`
