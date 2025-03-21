@@ -368,10 +368,21 @@ Litecoin
 : `0x000112a765e31ffd4059bada1e25190f6e98c99d9714d334efa41a195a7e7e04bfe2`
 
 # Appendix B: Binary encoding of addresses
-TODO, will be similar to ENSIP-9 and/or CAIP-50
 
-## Examples
-TODO
+## eip155
+20 bytes of evm addresses trivially stored as the payload.
+
+### Examples
+`0xD8DA6BF26964AF9D7EED9E03E53415D37AA96045` -> `0xD8DA6BF26964AF9D7EED9E03E53415D37AA96045`
+
+## solana
+base-58 encoded public keys should be decoded and stored as a 32 byte payload
+
+### Examples
+
+`7S3P4HxJpyyigGzodYwHtCxZyUQe9JiBMHyRWXArAaKv` -> `0x5F90554BB3D8C2FC82B6EE59C49AAA143E77F7D49A83E956CE1DBEF17A43F805`
+
+`DYw8jCTfwHNRJhhmFcbXvVDTqWMEVFBX6ZKUmG5CNSKK` -> `0xBA7A74F374AB05B70D114A78112EF0D3F0695A819572C79710B5372000D81AE2`
 
 # Appendix C: Short-encoding of byte arrays
 This is a mix between [how bytes and strings are saved into storage](https://docs.soliditylang.org/en/latest/internals/layout_in_storage.html#bytes-and-string) and how ABI encoding works
