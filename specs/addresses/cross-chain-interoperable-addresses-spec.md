@@ -1,197 +1,449 @@
 # Cross-chain interoperable addresses specification
 This document, in its current state, aims to be the starting point for a future address format called 'Interoperable Address' whose aims & properties are fully described in [a separate document](../PROPERTIES.md)
 
-Requires: CAIP-10
+Requires: RFC-4648, ENSIP-11, CAIP-2
 
-## Abstract
-An extensible way to describe an address specific to one chain which includes the information to securely condense it into a human-readable name.
+# Abstract
+An extensible way to describe an address specific to one chain which also includes the information to securely condense it into a human-readable name.
 
-## Out of scope concerns
-Similarly to CAIP-10, this specification is not concerned with the mapping from a chain id to a network name, which might not be surjective (eg: the case where if there are multiple EIP-155 chains with chain id 8453, which one should we call Base?), regarding that resolution a social-layer problem until a future ERC decides to tackle it. Efforts in that front are tracked in [the chain registires document](../docs/chain-registries.md)
+# Motivation
+The Ethereum ecosystem is rapidly expanding into a multi-chain environment encompassing L1s, L2s, sidechains, and rollups—some EVM‐compatible, others not. A simple address alone no longer identifies which chain the address belongs to, creating ambiguity for wallets, dApps, and users. At the same time, human‐readable naming (e.g. ENS) is important for usability, but must be deterministically tied to the correct network.
 
-## Definitions
-Account id
-: A string which unambiguously corresponds to an address on a specific chain (EVM or not). 
+Interoperable Addresses build on insights from previous iterations of ERC-7828 and related discussions, offering a unified format which combines:
+- Binding chain specificity (via explicit chain identifiers) to the raw address,
+- Support for human‐readable naming (through optional resolvers, e.g., ENS), and
+- Checksums for name collision mitigation.
+
+All without adding new trust assumptions beyond what wallets already apply. By bundling chain references, addresses, and optional resolver info into a canonical binary format, wallets can deterministically parse and display addresses, while users benefit from intuitive names.
+In short, this standard aims to:
+- Erase ambiguity by enshrining a deterministic link between chain and address.
+- Remain resolution‐agnostic, supporting various naming services and chain registries.
+- Permit multiple “version” specifications, ensuring future extensibility for different resolution schemes.
+- Provide a stable, machine‐readable binary representation digestible by smart contracts (e.g., via ABI).
+
+These goals make Interoperable Addresses future-proof and user-friendly, enabling trustless, cross-chain workflows in a multi-chain world. The format also seeks to align with existing standards (e.g., CAIP-2, CAIP-10) and embrace diversity of identifier formats.
+
+# Out of scope concerns
+Similarly to CAIP-10, this specification is not concerned with the mapping from a chain ID to a network name, which might not be surjective (eg: the case where if there are multiple EIP-155 chains with chain ID 8453, which one should we call Base?), regarding that resolution a social-layer problem until a future ERC decides to tackle it. Efforts in that front are tracked in [the chain registries document](../docs/chain-registries.md)
+
+# Definitions
+Interoperable Address
+: A binary payload which unambiguously identifies a target address and, optionally, a _resolver specification_ which, along with this (and potentially future) ERCs, allows conversion to a human-readable name without requiring further trust assumptions by wallet software.
 
 Human-readable name
-: A shorter representation of an account id
+: A string representation of an interoperable address, meant to be used by humans.
 
-Interoperable address
-: A string which includes both an account id and a _resolver specification_ which, together with this (and potentially future) ERCs, allows conversion to a human-readable name in a way that requires no further trust assumptions than those the wallet software executing said conversion already operates under.
+Target address
+: The (address, chain ID) pair a particular Interoperable Address points to.
 
-## Machine address format definition
+Name-resolving contract
+: A contract responsible for converting addresses and/or chain IDs from a machine-readable format into parts of a human-readable name.
 
-### Syntax
+# Guarantees provided by the standard
+- Any Interoperable Address is trivially convertible to Interoperable Canonical Format, `0x8000`, making it a canonical representation for users who need to treat them opaquely.
+- Checksums are short enough to be compared by humans, and effectively identify a _target address_ independently of any extra data the address may contain.
 
-```bnf
-<interoperable address>             ::= <resolver specification>::<CAIP-10 account id>#<checksum>
-<resolver specification>            ::= <resolver version>:<version-specific resolver payload>
-<resolver version>                  ::= [0-9]{1,4}
-<version-specific resolver payload> ::= [-.%a-zA-Z0-9]* // same as CAIP-10 account address format
-<checksum>                          ::= [0-9a-f]{8}
+# Binary Format definition
+Word 0 Is the only word which will be common to all versions, and is defined as follows:
+```
+MSB                                                            LSB
+0xXXXXYYYYYYYYZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZ
+  ^^^^------------------------ 255-240 Interoperable Address version
+      ^^^^^^^^ --------------- 239-208 Checksum
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                \------------- 207-0   Reserved
 ```
 
-### Semantics
-- Similarly to CAIP-10, the resolver payload has `%` as a valid character to enable URL-escaping of arbitrary characters
-    - The rules for wether to parse URL escaping in a resolver payload are specific to the resolver version
-    - The rules for wether to parse URL escaping in a CAIP-10 account address are specific to its CAIP-2 chain namespace
-- To maintain the bijectivity of account ids and therefore interoperable addresses to on-chain addresses:
-    - In CAIP-2 namespaces where there is a canonicalization scheme (such as EIP-55 in EIP-155 chains) it SHOULD be used.
-    - In CAIP-2 namespaces where addresses have an *optional* checksum field, it MUST be omitted and the checksum defined in the standard be used without redundancy
-    - In CAIP-2 namespaces where addresses are raw hexadecimal data without an EIP-55-equivalent capitalization scheme, the lowercase `a-f` characters MUST be used instead of uppercase ones.
-    - In the case of EIP-155 chains, EIP-55 canonicalization MUST be used
-- The checksum MUST be the hexadecimal representation first four bytes of the keccak-256 hash of UTF-8 representation of the interoperable address from it's beginning up to and including the hash `#` character separating the checksum from the rest of the address.
+No length restriction is placed on how many more words can an Interoperable Address span. Different versions of the standard can define uses for extra words and the 208 reserved bits.
 
-## Human-readable name format definition
+# Human-readable name format definition
 
-### Syntax
+## Syntax
 ```bnf
-<human readable name>      ::= <resolver version>=<version-specific payload>
-<resolver version>         ::= [0-9]{1,4}
-<version-specific payload> ::= [@-.%a-zA-Z0-9]*
+<human readable name> ::= <account>@<chain>#<checksum>
+<account>             ::= [-:_%a-zA-Z0-9]*
+<chain>               ::= [-:_a-zA-Z0-9]*
+<checksum>            ::= [0-9A-F]{8}
 ```
 
 ## Rationale
-- In order to guarantee future resolvers don't share prefixes with existing resolvers in an ambiguous way, and therefore human-readable names are always mappable to a single machine address, this standard defines the human-readable names to start with the resolver version. (TODO: ideally we should be smarter about this and resolve it in a way that doesn't expose this implementation quirk to users)
-- Similarly to CAIP-10, arbitrary characters can be url-encoded.
+- Chain and account fields' syntax is deliberately chosen to be able to express CAIP-2 namespaces and CAIP-10 account IDs, with the caveat that no length restriction is placed, so chains with longer address formats or full 256-bit EVM chainids can be represented.
+- Similarly, the account field includes `%` as a valid character to allow for url-encoding of any other characters.
 
-## Resolver version definitions
+# Interoperable Address version definitions
 
-### `0` : No resolution
-This is used to indicate no resolution, with the human-readable name being equal to the machine address. The machine address MUST be shown in full.
+## `0x8000`: Interoperable Canonical Format: arbitrary length addresses, CAIP-10 compatible display format
 
-#### Examples:
-Machine address
-: `0:::eip155:1:0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045#6164da10`
+### Machine-address format
 
-Human-readable name
-: `0:::eip155:1:0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045#6164da10`
-
-### `1` : No resolution, compact format
-This is used to indicate no resolution, but removing all redundant information that can be verified by the wallet. It is equivalent to the CAIP-10 account id, with the canonicalization caveat described above.
-
-#### Examples:
-Machine address
-: `1:::eip155:1:0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045#b50c58f9`
-
-Human-readable name
-: `1::eip155:1:0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045`
-
-### `2` : ERC-3770 chain name resolution only
-The human-readable name in this approach is consistent with the address format defined in ERC-3770, and similarly depends on the EF's mapping of chain ids to names maintained in github at: https://github.com/ethereum-lists/chains
-
-#### Human-readable name format
-
-```bnf
-<human readable name> ::= 2::<short chain name>:<EIP-55 formatted address>
+#### First word
+No reserved bits are used. They MUST be set to zero, to ensure canonicity of addresses.
 ```
-Since wallet software can always validate the checksum, it MUST be removed.
-
-EIP-55 or applicable scheme is used for canonicalization only.
-
-#### Examples:
-
-Machine address
-: `2:::eip155:1:0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045#bc797def`
-
-Human-readable name
-: `2::eth:0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045`
-
-### `3` : ENSIP-11 + ENSIP-19 for raw address resolution + ethereum-lists chain name resolution
-This resolver relies on the centralized [SLIP44](https://github.com/satoshilabs/slips/blob/master/slip-0044.md) list for ENS standards compliance and on the one used by ERC-3770 to define the short chain names.
-
-The machine address, in turn, specifies what will the source of truth be for the `raw address -> ens-like name` mapping, expecting it to conform to ENSIP-11.
-
-The chain/contract on which the ENSIP-11 contract used to resolve the human-readable name resides is abstracted away from the user, but implementing wallets MUST maintain a list of those considered trustworthy and warn the user or choose to display the machine address in full when the contract it instructs to use is outside the set.
-
-Also, wallets MAY have a default registry they use for converting human-readable names into machine addresses. This means different wallets could potentially resolve the same human-readable name to different machine addresses which potentially also map to different raw addresses. This should be mitigated by wallets' choices of valid and default registries.
-
-#### Human-readable name format
-
-```bnf
-<human readable name> ::= 3::<punycode-encoded name>@<chain-spec>#<checksum>
-<chain-spec>          ::= <CAIP-2 chain id>|<ERC-3770 shortName>
+MSB                                                            LSB
+0x8000XXXXXXXX0000000000000000000000000000000000000000000000000000
+  ^^^^------------------------ 255-240 Interoperable Address version
+      ^^^^^^^^ --------------- 239-208 Checksum
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+              \--------------- 207-0   Reserved
 ```
 
-#### Machine-address format
+#### Second field
+Serializes the chain ID as described in [Appendix A](#appendix-a-binary-encoding-of-caip-2-blockchain-id) and encodes it into a byte array as described in [Appendix C](#appendix-c-short-encoding-of-byte-arrays). It is a _field_ and not a _word_, since it may take up more than one word.
 
-```bnf
-<machine address> ::= 3:<CAIP-10 account id of ENSIP-11 contract>::<CAIP-10 account id>#<checksum>
+#### Third field
+Serializes the address as described in [Appendix A](#appendix-a-binary-encoding-of-caip-2-blockchain-id) and encodes it into a byte array as described in [Appendix C](#appendix-c-short-encoding-of-byte-arrays). It is a _field_ and not a _word_, since it may take up more than one word, and may not start at the third word boundary if the second field takes up more than one word.
+
+### Human-readable name resolution
+The CAIP-2 namespace is to be rendered alongside the CAIP-10 formatted address and the checksum:
+
+```
+<CAIP-10 formatted address>@<CAIP-2 namespace>#<checksum>
 ```
 
-#### `machine address -> human-readable name` resolution
-1. Extract CAIP-2 `chainId` and raw address from `<CAIP-10 account id of ENSIP-11 contract>`.
-    - Failure mode: wallet can't call the contract (eg: does not have access to an rpc of that chain)
-    - Failure mode: `chainId` is not an EVM address
-2. Look up in wallet's 'trusted registry' set (which MAY be locally updated by the user) and see if the contract is contained in it. If it is not, issue a warning to the user.
-3. Extract `chainId` and raw address from `<CAIP-10 account id>`.
-4. Convert `chainId` from step above into ENSIP-11 `coinType`
-5. Compute the namehash for the ENSIP-19 reverse resolution from the results of step 3 and 4
-    - TODO: check if ambiguities or other edge cases are possible when converting from CAIP-10 into the raw form required by ENSIP-11
-6. Call `resolver(bytes32 node)`on the contract obtained in step 1, using the value from the step above for `node`.
-7. Call `name(bytes32 node)` on the contract returned by the step above. Save the response as the `<punycode-encoded name>`.
-8. Check direct resolution of name obtained in the step above, and fail the resolution if it does not match, as described in ENSIP-19
-9. For the `<chain-spec>`, extract the CAIP-2 chain id from `<CAIP-10 account id>`. If said chain has an entry in ethereum-lists, display its shortname. Otherwise, display the raw CAIP-2 chain id.
-10. Append the checksum from the machine address.
+### Examples
 
-#### `human-readable name -> machine address ` resolution
-1. Let the user input a destination chain name, and convert it to a CAIP-2 chainId.
-2. Convert the result from step 1 into an ENSIP-11 `coinType`.
-3. Let the user input a unicode string instead of the punycode-encoded name.
-4. Convert the string from step 3 into a punycode-encoded name.
-5. Compute the punycode-encoded name's namehash.
-6. Call `addr(namehash, coinType)` on the wallet's default resolver, with the values from steps 5 and 2 respectively.
-    - If it returns the zero address, prompt the user to pick another trusted resolver where the name is defined.
-    - Failure mode: name cant be resolved with trusted resolvers.
-7. Construct `<CAIP-10 account id of ENSIP-11 contract>` with the resolver used in the step above.
-8. Construct `<CAIP-10 account id>` with the address returned in step 6 and the destination chain from step 1.
-9. The user should obviously not be prompted for the checksum, but it MUST be displayed somewhere in the wallet UI for the user to optionally validate with the receiver that they are using the same resolver.
-10. Wallets MAY choose to display the full machine address as well.
+Human-readable name:
+`0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045#6164DA10@eip155:1#618ad0d1`:
 
-#### Pre-validations
-- The CAIP-2 `chain_id` included within both CAIP-10 account ids can be mapped to a valid ENSIP-11 `coinType` which extends both ENSIP-9 and SLIP44
+First word:
+```
+MSB                                                            LSB
+0x80006164DA100000000000000000000000000000000000000000000000000000
+  ^^^^------------------------ 255-240 Interoperable Address version
+      ^^^^^^^^ --------------- 239-208 Checksum
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+              \--------------- 207-0   Not used
+```
 
-#### Semantics
-- ENS uses [punycode](https://www.unicode.org/reports/tr46/) to encode non-ascii characters, which SHOULD be rendered by wallets. In cases where the wallet could infer the presence of non-ascii characters to be unlikely (eg: depending on locale), a warning MAY also be issued to the user.
-- `<punycode-encoded name>` is to be the fully qualified name, including the TLD. 
-- For chains listed in `ethereum-lists/chains`, the short name MUST be used, taking precedence over the CAIP-2 chain id.
+Second word (second field):
+```
+MSB                                                            LSB
+0x0100000000000000000000000000000000000000000000000000000000000002
+  ^^----------------------------------------------------------------- 255-249 bytes array payload
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ ---- 9-249   padding
+                                                                ^^ -- 0-8    2*1 (payload length)
+```
 
-#### Rationale
-This is proposed as a way to have functional human readable names with existing tooling and infrastructure, while being flexible in not enshrining a particular contract to allow for future changes on where & how names are resolved. Future developments in chain configs and name registries should improve upon it's decentralization characteristics and render it obsolete in the long-term.
+Third word (third field):
+```
+MSB                                                            LSB
+0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045000000000000000000000028
+  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^  ------------------------- 255-97 bytes array payload
+                                          ^^^^^^^^^^^^^^^^^^^^^^ ---- 9-96   padding
+                                                                ^^ -- 0-8    2*20 (payload length)
+```
 
-Since it's possible for users' wallets to use different name registries by default when computing a machine address from a human-readable name, the checksum for the machine address is provided as a layer of defense against losing funds either by mis-configuration or deliberate attacks taking advantage of the differences between the data contained in different naming registries.
+TODO: example with multi-word fields
 
-#### Examples:
+## `0xC000`: Interoperable Canonical Format With Resolver Info: arbitrary length addresses, arbitrary length name-resolving contract specification
 
+### Machine-address format
+
+#### First word
+Uses reserved bits as a registry of interfaces the provided resolver conforms to.
+```
+MSB                                                            LSB
+0xC000XXXXXXXX0000000000000000000000000000000000000000000000000000
+  ^^^^------------------------ 255-240 Interoperable Address version
+      ^^^^^^^^ --------------- 239-208 Checksum
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+              \--------------- 207-0   Resolver Interface Key
+```
+The Resolver Interface Key defines how wallets should interact with the smart contract responsible for assigning names to addresses.
+Said contract MAY also be responsible for naming the chain on which the target address resides as well as providing a human-readable name for the address, when ERC-7785 or similar standards reach production.
+
+#### Second field
+Serializes the chain ID of the target address  as described in [Appendix A](#appendix-a-binary-encoding-of-caip-2-blockchain-id) and encodes it into a byte array as described in [Appendix C](#appendix-c-short-encoding-of-byte-arrays).
+
+#### Third field
+Serializes the address of the target address as described in [Appendix A](#appendix-a-binary-encoding-of-caip-2-blockchain-id) and encodes it into a byte array as described in [Appendix C](#appendix-c-short-encoding-of-byte-arrays).
+
+#### Fourth field
+Serializes the chain ID where the name-resolving contract is located as described in [Appendix A](#appendix-a-binary-encoding-of-caip-2-blockchain-id) and encodes it into a byte array as described in [Appendix C](#appendix-c-short-encoding-of-byte-arrays).
+
+#### Fifth field
+Serializes the address of the name-resolving contract as described in [Appendix A](#appendix-a-binary-encoding-of-caip-2-blockchain-id) and encodes it into a byte array as described in [Appendix C](#appendix-c-short-encoding-of-byte-arrays).
+
+### Human-readable name resolution
+Specific to every Resolver Interface Key
+
+### Resolver Interface Keys
+
+#### `0x0000000000000000000000000000000000000000000000000000`
+Responsibility over discovering the interface of the naming smart contract is delegated to the contract itself, via mechanisms comparable to `ERC165`, out of scope for this definition.
+
+#### `0x0000000000000000000000000000000000000000000000000001`
+Naming contract is expected to conform to ENSIP-11, and used to display the address. ENSIP-11 does not name chains, so the CAIP-2 name should be used instead.
+
+### Examples
+
+Human-readable name:
+`vitalik.eth@eip155:1#618AD0D1`:
+
+First word: metadata
+```
+MSB                                                            LSB
+0xC0006164DA100000000000000000000000000000000000000000000000000001
+  ^^^^------------------------ 255-240 Interoperable Address version
+      ^^^^^^^^ --------------- 239-208 Checksum
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+              \--------------- 207-0   Resolver Interface Key
+```
+
+Second word (second field): target address' chain ID
+```
+MSB                                                            LSB
+0x000001000000000000000000000000000000000000000000000000000000000C
+  ^^^^^^------------------------------------------------------------- 255-208 bytes array payload
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ ---- 9-207   padding
+                                                                ^^ -- 0-8     2*6 (payload length)
+```
+
+Third word (third field): target address
+```
+MSB                                                            LSB
+0xD8DA6BF26964AF9D7EED9E03E53415D37AA96045000000000000000000000028
+  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^  ------------------------- 255-97 bytes array payload
+                                          ^^^^^^^^^^^^^^^^^^^^^^ ---- 9-96   padding
+                                                                ^^ -- 0-8    2*20 (payload length)
+```
+
+Fourth word (fourth field): name resolving contract's chain ID
+```
+MSB                                                            LSB
+0x000001000000000000000000000000000000000000000000000000000000000C
+  ^^^^^^------------------------------------------------------------- 255-208 bytes array payload
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ ---- 9-207   padding
+                                                                ^^ -- 0-8     2*6 (payload length)
+```
+
+Fifth word (fifth field): name resolving contract's address
+```
+MSB                                                            LSB
+0x00000000000C2E074EC69A0DFB2997BA6C7D2E1E000000000000000000000028
+  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^  ------------------------- 255-97 bytes array payload
+                                          ^^^^^^^^^^^^^^^^^^^^^^ ---- 9-96   padding
+                                                                ^^ -- 0-8    2*20 (payload length)
+```
+
+TODO: example with other ENSIP-11 contract
+
+### Security considerations
+- Wallets will have to maintain a list of Resolver Interface Keys they support, and which name-resolving contracts they consider trustworthy, and display addresses as described in `0x8000` when the provided name-resolving contract is not contained in the list. Said list MAY be updateable by the user.
+
+## `0x0000` : single-word 48-bit EVM chain IDs, no human-readable name resolution
+This encoding is meant to be the shortest possible way to encode most EVM addresses
+
+### Supported chains
+EVM chains with a chain ID shorter than 48 bits (which potentially rules out chain IDs chosen to comply with ERC-7785)
+
+### Machine-address format
+
+```
+MSB                                                            LSB
+0x0000000000000000000000000000000000000000000000000000000000000000
+  ^^^^------------------------ 255-240 Interoperable Address version
+      ^^^^^^^^ --------------- 239-208 Checksum
+              ^^^^^^^^^^^^
+                \------------- 207-160 Chain ID
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                            \- 159-0   Address
+```
+
+`Interoperable Address version`
+: Always `0x0000`
+
+`Checksum`
+: Computed as described in [Appendix D](#appendix-d-checksum-computation)
+
+`ChainID`
+: `uint48` containing the chain ID for the target chain
+
+`Address`
+: Native EVM address
+
+### Human-readable name resolution
+The CAIP-2 namespace is to be rendered alongside the `0x`-prefixed EIP-55 address and the checksum
+
+```
+<address>@<CAIP-2 namespace>#<checksum>
+```
+
+### Examples:
 Machine address
-: `3:eip155:1:0x00000000000C2E074eC69A0dFb2997BA6C7d2e1e::eip155:10xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045#5966be0f`
+: 
+```
+MSB                                                            LSB
+0x0000618ad0d1000000000001D8DA6BF26964AF9D7EED9E03E53415D37AA96045
+  ^^^^------------------------ 255-240 Interoperable Address version
+      ^^^^^^^^ --------------- 239-208 Checksum
+              ^^^^^^^^^^^^
+                \------------- 207-160 chain ID
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                            \- 159-0   Address
+```
 
 Human-readable name
-: `3::vitalik.eth@eth`
+: `0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045#6164da10@eip155:1#618AD0D1`
 
-#### Security considerations
-- If the resolver lives in the destination/source chains, then securing a trustworthy RPC is already in scope of the wallet's responsibilities to operate safely
-- If the resolver lives in L1 or a name-specific rollup, then presumably it's feasible to run a light client of said network as part of the infrastructure trusted by the wallet
+## `0x0001` : Compact format, ENSIP-11+ERC-3770 name resolution 
+The binary representation is identical to the format above, with the exception that the version number is different, indicating the intent for the chain to be displayed using the ERC-3770 shortname and the address to be displayed following mainnet's ENS deployment and ENSIP-11
 
-## Requirements for wallet software
-- When parsing the CAIP-10 `account_address` for a CAIP-2 chain namespace where URL-escaping or the `%` character is not part of valid addresses, finding URL-encoded data MUST be treated as an error.
-- Wallet software MUST perform all relevant pre-validations, including verifying the checksum, and report any errors to the user, for every defined resolver. Wallets MAY reject an interoperable address solely on the basis of these checks failing.
-- TODO: what to do when a machine address' resolver version is not supported by the wallet
-    - option 1: show it as is -> easiest
-    - option 2: convert it to resolver `1` -> guarantees not-that-bad-to-read address is shown to the user, might impose extra constraints on existing resolvers.
+### Supported chains
+Chain must be listed on ethereum-lists/chains on top of the restrictions of `0x0000`.
 
-## Recommendations for rollups
-TODO: probably coupled to ERC-7785, currently out of scope
+### Machine-address format
+Same as `0x0000`, with `0x0001` version
+
+### Examples:
+Machine address
+: 
+```
+MSB                                                            LSB
+0x0001618ad0d1000000000001D8DA6BF26964AF9D7EED9E03E53415D37AA96045
+  ^^^^------------------------ 255-240 Interoperable Address version
+      ^^^^^^^^ --------------- 239-208 Checksum
+              ^^^^^^^^^^^^
+                \------------- 207-160 chain ID
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                            \- 159-0   Address
+```
+
+Human-readable name
+: `vitalik.eth@eth#618AD0D1`
+
+TODO: example on another chain
+
+# Restrictions for future versions
+- The Interoperable Address MUST include an address and specify the chain it belongs to, fully defining a target address. Any version that adds an indirection layer between payload data and these two fields would violate this restriction.
+- Interoperable Address versions MAY only be able to represent a subset of the CAIP-2 namespaces.
+- Interoperable Address versions MAY define extra fields containing information on how to display the addresses.
+- The most significant version bit is reserved to mean an address complies with the Interoperable Canonical Format, described in Interoperable Address version `0x8000`.
+- The second-most significant version bit is reserved to mean the payload includes information on how to display the address to users, but is not normative about how that information is to be encoded. An example of this is provided in Interoperable Address version `0xC000`.
+
+# Requirements for wallet software
+- Wallet software MUST perform all relevant pre-validations, including verifying the checksum, and report any errors to the user.
+- Wallets MAY reject an interoperable address solely on the basis of the checks above failing.
+
+# Encoding considerations
+- On-chain actors, such as smart contracts, MUST always receive and return the machine addresses as byte array.
+- On-chain actors, such as smart contracts, MAY only accept canonical `0x8000` address versions, with off-chain actors being responsible over converting them to said format.
+- Off-chain actors, such as wallets, MAY use the blockchain-native byte array representation, or, where practical MAY alternatively use base64 [^2] as defined in RFC-4648 to encode the former.
+- Users SHOULD NOT be shown the base64 or binary representations. Instead, they should be presented with the intended human-readable name or, in cases where that is not possible, wallet software MUST fall back to interpreting it as an Interoperable Address version `0x8000`.
+
+[^2]: Base64 was chosen since it is a more widely implemented standard than base58. Additionally, since machine addresses are not to be directly displayed to the user, the collision-avoidance reasons in favor of base58 do not apply
+
+# Appendix A: Binary encoding of CAIP-2 blockchain ID
+The first two bytes are the binary representation of CAIP-2 namespace (see table below), while the remaining bytes correspond to the CAIP-2 reference, whose encoding is namespace-specific and defined below.
+
+## CAIP-2 namespaces' binary representation table
+
+| Namespace | binary key |
+| ---       | ---        |
+| eip155    | `0x0000`   |
+| bip122    | `0x0001`   |
+
+### eip155
+The bare `chainid` encoded as a `uint` of the necessary amount of bytes will be used [^1]. This allows for most of existing EVM chain IDs to fit inside one EVM word.
+
+[^1]: This makes it possible to represent some chains using the full word as their chainid, which CAIP-2 does not support since the set of values representable with 32 `a-zA-Z0-9` characters has less than `type(uint256).max` elements. This is done in an effort to support chains whose ID is the output of `keccak256`, as proposed in ERC-7785.
+
+#### Examples
+Ethereum Mainnet: `0x000001` (1, encoded as uint8)
+
+Optimism Mainnet: `0x00000A` (10, encoded as uint8)
+
+Ethereum Sepolia: `0x0000aa36a7` (11155111, encoded as uint24)
+
+### bip122
+The genesis/fork blockhash is to be stored raw, without encoding/decoding from/to base58btc, and without removing any leading zeroes:
+
+Note: CAIP-2 limits chain references to 32 characters, so converting to it will require truncating the reference, so converting _from_ CAIP-2 to this standard is potentially ambiguous (but converting from actual bip122 to this standard will never be).
+
+#### Examples
+Bitcoin Mainnet
+: `0x0001000000000019d6689c085ae165831e934ff763ae46a2a6c172b3f1b60a8ce26f`
+
+Litecoin
+: `0x000112a765e31ffd4059bada1e25190f6e98c99d9714d334efa41a195a7e7e04bfe2`
+
+# Appendix B: Binary encoding of addresses
+
+## eip155
+20 bytes of evm addresses trivially stored as the payload.
+
+### Examples
+`0xD8DA6BF26964AF9D7EED9E03E53415D37AA96045` -> `0xD8DA6BF26964AF9D7EED9E03E53415D37AA96045`
+
+## solana
+base-58 encoded public keys should be decoded and stored as a 32 byte payload
+
+### Examples
+
+`7S3P4HxJpyyigGzodYwHtCxZyUQe9JiBMHyRWXArAaKv` -> `0x5F90554BB3D8C2FC82B6EE59C49AAA143E77F7D49A83E956CE1DBEF17A43F805`
+
+`DYw8jCTfwHNRJhhmFcbXvVDTqWMEVFBX6ZKUmG5CNSKK` -> `0xBA7A74F374AB05B70D114A78112EF0D3F0695A819572C79710B5372000D81AE2`
+
+# Appendix C: Short-encoding of byte arrays
+This is a mix between [how bytes and strings are saved into storage](https://docs.soliditylang.org/en/latest/internals/layout_in_storage.html#bytes-and-string) and how ABI encoding works
+
+This arises out of:
+- The need for the shortest possible representation of EVM addresses.
+- The absence of a canonical place to delimit the _start_ of the data (in the case of storage strings, this is the keccak256 hash of the storage slot index).
+
+If the data is at most 31 bytes long, the elements are stored in the higher-order bytes (left-aligned) and the lowest-order byte stores the value `length * 2`.
+
+If the data is 32 bytes or longer, the current word stores `length * 2 + 1`, and data follows in the next words, left-aligned and zero-padded.
+
+This means access to an arbitrary field in the structure requires a worst-case linear amount of reads. Future encodings using it should take it into consideration to put less-frequently-accessed members last.
+
+## Examples 
+
+`0x1234`: `0x1234000000000000000000000000000000000000000000000000000000000005`
+
+`0x01FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF1234`: `0x01FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF12343E`
+
+`0x00112233445566778899AABBCCDDEEFF00112233445566778899AABBCCDDEEFF`:
+```
+0x
+0000000000000000000000000000000000000000000000000000000000000041
+00112233445566778899AABBCCDDEEFF00112233445566778899AABBCCDDEEFF
+```
+
+`0x00112233445566778899AABBCCDDEEFF00112233445566778899AABBCCDDEEFF0011`:
+```
+0x
+0000000000000000000000000000000000000000000000000000000000000045
+00112233445566778899AABBCCDDEEFF00112233445566778899AABBCCDDEEFF
+0011000000000000000000000000000000000000000000000000000000000000
+```
 
 ## Rationale
-- URL-escaping of characters might be necessary for future resolvers
-- Checksum algorithm is independent of used resolution method to allow wallets to validate an interoperable address' checksum despite not being able to generate its human-readable name
-- Ideally we'd want the resolution method to be fully abstracted away from the user, but that might not be achievable in every case. The next best thing is to prefix every human-readable name with a string denoting which method to use, which prevents the user ever being prompted to choose different addresses based on the resolution method used for each, which would be a more confusing and riskier UX 
+With this approach, packing the data right after the word saving its length instead of storing the offset to the data, we don't allow for extra information to be inserted in a way that is not visible to parsers (as is possible with ABI encoding), which allows for the canonicity of encoded addresses.
 
-## Compatibility with other public-key sharing standards
+# Appendix D: checksum computation
+With the intent of:
+- Maximizing the difficulty of mining checksum collisions
+- Maximize the safety a user gets from knowing the checksum matches
+- Allow maximum flexibility for human-readable names, leveraging the above to make human-readable name collisions permissible.
 
-### W3C DID
-TODO
+And considering:
+- Binary payloads will often have their own error-correction mechanisms when in transit (eg: if encoded into a QR code, said QR code will have information redundancy & its own checksum ensuring only valid data can be decoded), so that can safely be deemed out of scope.
+TODO: Considering the above, does it make sense to store the checksum inside the address?
 
-## Security considerations
+We propose a way to serialize the 'abstract' components of an address, ignoring the information on how it should be displayed, to achieve the above: 
 
+```solidity
+    function getChecksum(bytes2 caip2Namespace, bytes memory chainId, bytes memory address_)
+        internal
+        view
+        returns (bytes4 checksum)
+    {
+        bytes memory fullChainId = bytes.concat(caip2Namespace, chainId);
+        // Deliberately abi-encode instead of encode-packed to avoid preimage collisions
+        bytes memory serialized = abi.encode(fullChainId, address_);
+        bytes32 hashed = keccak256(serialized);
+        checksum = bytes4(hashed);
+    }
+```
+TODO: describe this in a way which is not potentially coupled to solidity (or even a specific version of it)
