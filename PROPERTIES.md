@@ -94,7 +94,42 @@ The following properties outline the requirements for solutions in both spaces.
 
 ## Message Passing
 
-[To be added]
+### Must-have
+
+1. Safety - Assuming the mode of message verification is honest, a message is delivered at the destination iff it was sent at the source chain. 
+
+2. Liveness - Assuming liveness and censorship-resistance of the source and destination chains, a sent message is eventually delivered at the destination chain. 
+
+3. VM-Agnosticism - Assuming the VM allows arbitrary logic, the interface can be implemented on any VM.  The interface works between many different VM implementations. 
+* Balance this goal with goal 6; the interface shouldn't be overly complex in order to achieve VM-agnosticism. 
+
+4. Proof-Agnosticism - The interface makes no assumption about how messages are proved to be valid. Many unique proof systems will be used in the underlying messaging protocols, and the interface works the same across all of them. 
+
+5. Protocol-agnosticism - The interface makes no assumptions about how the underlying messaging protocol works. 
+
+6. Optimized for most use cases - The interface optimizes to provide the best developer experience for bridging and cross-chain function calls across L2s, L3s, and Ethereum. 
+* Supporting all use cases results in a more complex interface.  This may lead developers to use wrapper contracts to simplify the interface or to not adopt the interface at all, defeating the purpose of the interface.  
+* Edge cases can be handled by the messaging protocol itself. Some edge use cases may depend on the specific messaging protocol used. 
+
+### Should-have
+
+1. Timely Delivery - Assuming liveness and censorship resistance of the source and destination chains, messages should arrive within a known, bounded time delay. 
+
+2. Allows arbitrary data transfer - Interface allows applications to send arbitrary data between chains, vs. forcing cross chain messages to represent tokens exclusively. 
+
+### Nice to Have
+
+1. L1 <-> L1 messaging - The interface should work to interoperate across L1s in the same way it interoperates within the Ethereum ecosystem. (This property is implied by the other properties). 
+
+2. Gas abstraction - The interface should support the ability for users to pay gas on the destination chain from the source chain, since this is required in most use cases. 
+
+### Non-Goals
+
+1. Message broadcasting - While the underlying protocols may implement a message broadcast mechanism, the interface does not need to optimize for this use case. 
+
+2. Ordering - The interface does not enforce the order in which messages arrive. 
+
+
 
 ## Cross-Chain Intents
 
