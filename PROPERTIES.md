@@ -94,6 +94,7 @@ The following properties outline the requirements for solutions in both spaces.
 
 ## Message Passing
 
+
 ### Must-have
 
 1. Safety - Assuming the mode of message verification is honest, a message is delivered at the destination iff it was sent at the source chain. 
@@ -128,8 +129,6 @@ The following properties outline the requirements for solutions in both spaces.
 1. Message broadcasting - While the underlying protocols may implement a message broadcast mechanism, the interface does not need to optimize for this use case. 
 
 2. Ordering - The interface does not enforce the order in which messages arrive. 
-
-
 
 ## Cross-Chain Intents
 
