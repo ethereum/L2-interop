@@ -11,12 +11,6 @@ Standards are made to fit from any blockchain to potentially any blockchain. The
 [ERC-6170](https://github.com/ethereum/ERCs/blob/master/ERCS/erc-6170.md/) defines a basic, minimal interface to send (`sendMessage`) and receive (`receiveMessage`) arbitrary messages. This is considered one of the most simple standards.
 
 ```mermaid
----
-config:
-  theme: dark
-  fontSize: 48 
----
-
 sequenceDiagram
     participant User
     participant ContractA as IERC6170 (Chain A)
@@ -39,12 +33,6 @@ sequenceDiagram
 [ERC-7786](https://github.com/ethereum/ERCs/pull/673) also proposes a minimal interface to send (`sendMessage`) and receive (`executeMessage`) arbitrary messages. It containts extensible attributes that can be adapted to multiple bridging protocol models, as it is intented to be proof-agnostic. It leverages CAIP-10 for sender/receiver addresses, and introduces an optional post-proccessing step for any custom logic, as well as a explicit definitions of roles for sending and executing messages.
 
 ```mermaid
----
-config:
-  theme: dark
-  fontSize: 48
----
-
 sequenceDiagram
     participant User
     participant GatewaySource as IERC7786GatewaySource (Chain A)
@@ -66,13 +54,6 @@ sequenceDiagram
 [ERC-7841](https://github.com/ethereum/ERCs/pull/766), similarly to ERC-7786, defines a standard message format (metadata + payload). Also conceives the existence of the Mailbox contract for storing/retrieving messages, allowing either push- or pull-based bridging (see `execute` implementation example), so the message might sit "in the mailbox" until bridging is proven or invoked.
 
 ```mermaid
-
----
-config:
-  theme: dark
-  fontSize: 48
----
-
 sequenceDiagram
     participant User
     participant MailboxA as Mailbox (Chain A)
@@ -94,12 +75,6 @@ sequenceDiagram
 [ERC-7854](https://github.com/ethereum/ERCs/pull/817) defines a minimal interface that decouples the messaging functions from the underlying verification method. Introduces a "Interchain Security Modules" API as a way to isolate the verification of messages.
 
 ```mermaid
----
-config:
-  theme: dark
-  fontSize: 48
----
-
 sequenceDiagram
     participant User
     participant MailboxA as Mailbox (Chain A)
@@ -127,12 +102,6 @@ Different protocols have been built to enable message passing between the chains
 - **V1**: Establishes the `MessageTransmitter` by defining `sendMessage`, with destination, recipient, and `messageBody`, as well as the `receiveMessage` function. Users are able to self-relay. Senders can specify who is allowed to relay by using `sendMessageWithCaller`. Messages can be replaced before being received using `replaceMessage`.
 
 ```mermaid
----
-config:
-  theme: dark
-  fontSize: 48
----
-
 sequenceDiagram
     participant User
     participant SourceMessenger as MessageTransmitter (Chain A)
@@ -155,12 +124,6 @@ sequenceDiagram
 - **V2**: `MessageTransmitterV2` defines `sendMessage` similarly to V1, but adds `destinationCaller` as a default parameter and includes `finalityThresholdExecuted`. The `receiveMessage` function is adapted to support these new features. A `replace` function, as seen in V1, is not explicitly present in this version.
 
 ```mermaid
----
-config:
-  theme: dark
-  fontSize: 48
----
-
 sequenceDiagram
     participant User
     participant SourceMessenger as MessageTransmitter (Chain A)
@@ -185,12 +148,6 @@ sequenceDiagram
 [LayerZero](https://docs.layerzero.network/v2/developers/evm/technical-reference/api) is a generic messaging protocol that deploys an `EndpointV2` on each chain. Users invoke `send` on the source endpoint, optionally paying fees in either native tokens or the `lzToken`. Off-chain relayers verify and transport the message to the destination chain, where the `verify` (under validation flow) and `lzReceive` calls deliver the payload to the intended receiver contract. Additional features include allowing delegated calls, clearing queued messages with `clear`, and customizing fee payments or message parameters via `MessagingParams`.
 
 ```mermaid
----
-config:
-  theme: dark
-  fontSize: 48
----
-
 sequenceDiagram
     participant User
     participant SourceEndpoint as EndpointV2 (Chain A)
@@ -220,12 +177,6 @@ Most rollups have built-in messaging interfaces between L1 and L2. Some of them 
 The `sendMessage` function includes the value, recipient, fee to pay, and calldata, while `claimMessage` adds the fee recipient and nonce on top of those. Manual claiming is always available, especially used when no fee is set to be paid. For both flows, messages must first be verified against `MessageManager`. Additionally, for L2→L1 transfers, `claimMessageWithProof` is used, which includes a Merkle proof for final verification.
 
 ```mermaid
----
-config:
-  theme: dark
-  fontSize: 48
----
-
 sequenceDiagram
     participant User
     participant OriginService as L1 or L2 MessageService (Chain A)
@@ -254,12 +205,6 @@ OP Stack deploys corresponding messenger contracts on both L1 and L2, as well as
     - L2→L1 follows a pull-based model, where withdrawals are in practice finalized asynchronously, executed through `finalizeWithdrawalTransaction`.
 
 ```mermaid
----
-config:
-  theme: dark
-  fontSize: 48
----
-
 sequenceDiagram
     participant User
     participant OriginMessenger as L1 or L2 CrossDomainMessenger (Chain A)
@@ -281,12 +226,6 @@ sequenceDiagram
 - **[L2→L2](https://specs.optimism.io/interop/messaging.html)**: This has its own flow while still relying on the `sendMessage` and `relayMessage` concepts. Messages are sent directly from one L2 chain to another by specifying the destination chain ID, the target address, and the message payload. Once the message is validated via `CrossL2Inbox`, anyone can call `relayMessage` on the destination L2 by providing proof of the source event. This process remains asynchronous and can be finalized as soon as possible, depending on off-chain relayers and sequencers detecting and confirming initiated messages.
 
 ```mermaid
----
-config:
-  theme: dark
-  fontSize: 48
----
-
 sequenceDiagram
     participant User
     participant OriginMessenger as L2ToL2CrossDomainMessenger (Chain A)
@@ -316,12 +255,6 @@ The L1→L2 / L2→L1 flow follows the `ScrollMessengerBase` library. The `sendM
 - L2→L1 follows a pull-based model, where messages are finalized asynchronously. Messages are finalized by calling `relayMessageWithProof`, which requires a Merkle Proof.
 
 ```mermaid
----
-config:
-  theme: dark
-  fontSize: 48
----
-
 sequenceDiagram
     participant User
     participant OriginMessenger as L1 or L2 ScrollMessenger (Origin)
