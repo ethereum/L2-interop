@@ -93,7 +93,7 @@ sequenceDiagram
 
 ## External Messaging Protocols
 
-Different protocols have been built to enable message passing between the chains they operate on. In principle, all of them function with their own security models and independently of the chain's operations and governance. Most prioritize speed over canonical bridges, as they operate under some degree of confirmation subjectivity.
+Different protocols have been built to enable message passing across the chains they support. In principle, all of them function with their own security models and operate independently of the chains’ operations and governance. Most prioritize speed over canonical bridges, as they rely on some degree of confirmation subjectivity
 
 ### CCTP
 
