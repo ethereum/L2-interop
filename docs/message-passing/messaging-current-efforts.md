@@ -192,7 +192,7 @@ sequenceDiagram
     Relayer->>DestinationService: claimMessage(from, to, fee, value, feeRecipient, calldata, nonce) <br/> or claimMessageWithProof(ClaimMessageWithProofParams params) 
     DestinationService->>DestinationService: emit MessageClaimed(messageHash)
     DestinationService->>Recipient: Deliver message contents
-    DestinationService->>Relayer: receive fees (if it is allowed/seted)
+    DestinationService->>Relayer: receive fees (if it is allowed/set)
 
 ```
 
