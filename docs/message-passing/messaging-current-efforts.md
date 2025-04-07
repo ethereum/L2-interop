@@ -200,7 +200,7 @@ sequenceDiagram
 
 OP Stack deploys corresponding messenger contracts on both L1 and L2, as well as L2-to-L2 when interoperability is enabled at the protocol level. All of them include replay protection.
 
-- **[L1→L2 / L2→L1](https://specs.optimism.io/protocol/messengers.html)**: This follows the `CrossDomainMessenger` library. The `sendMessage` function includes the target, value (in ETH), message data, and gas limit. The `relayMessage` function, in turn, includes the same parameters while adding the sender and nocce.
+- **[L1→L2 / L2→L1](https://specs.optimism.io/protocol/messengers.html)**: This follows the `CrossDomainMessenger` library. The `sendMessage` function includes the target, value (in ETH), message data, and gas limit. The `relayMessage` function, in turn, includes the same parameters while adding the sender and nonce.
     - L1→L2 operates on a push-based model, where sequencers process deposits when deemed safe, strictly following the order in which they were initiated.
     - L2→L1 follows a pull-based model, where withdrawals are in practice finalized asynchronously, executed through `finalizeWithdrawalTransaction`.
 
