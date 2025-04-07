@@ -168,7 +168,7 @@ sequenceDiagram
 
 ## Rollup Messaging Protocols
 
-Most rollups have built-in messaging interfaces between L1 and L2. Some of them have their own messaging protocol with other instances they choose to interoperate with and may depend on.
+Some implement their own messaging protocols to interoperate with specific instances they choose and may also rely on.
 
 ### Linea
 
