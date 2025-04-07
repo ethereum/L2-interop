@@ -5,7 +5,7 @@
 - [Cross-Chain Interoperable Addresses](addresses/cross-chain-interoperable-addresses-spec.md)
 
 ## Assets
-- [Asset Types](asset-types.md)
+- [Asset Types](https://github.com/ethereum/L2-interop/blob/main/docs/assets/asset-types.md)
 
 ## Message Passing
 - [Message Types](message-types.md)
