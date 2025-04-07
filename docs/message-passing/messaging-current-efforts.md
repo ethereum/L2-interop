@@ -4,7 +4,7 @@ As the Ethereum landscape evolves, passing valid messages between different L2s,
 
 ## Existing Messaging Standards
 
-Standards are made to fit from any blockchain to potentially any blockchain. These standards are not concerned with the verification mechanism or off-chain methods of a message to verify and deliver.
+These standards are meant to work between any blockchain. They are agnostic to how messages are verified or delivered, including any off-chain mechanisms.
 
 ### ERC-6170: Cross-Chain Messaging Interface
 
