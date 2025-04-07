@@ -11,7 +11,7 @@
 - [Message Types](message-types.md)
 
 ## Intents
-- [Intent Types](intent-types.md)
+- [Intent Types](https://github.com/ethereum/L2-interop/blob/main/docs/intents/intent-types.md)
 
 ## Additional Resources
 - [API Reference](api-reference.md)
