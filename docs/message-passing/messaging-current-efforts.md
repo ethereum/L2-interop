@@ -42,28 +42,23 @@ sequenceDiagram
 ---
 config:
   theme: dark
-  fontSize: 48 
+  fontSize: 48
 ---
 
 sequenceDiagram
     participant User
-    participant GatewaySource as IERC7786GatewaySource (Chain A)
-    participant Outbox as "Outbox Tracking"
-    participant RelayProcess as Off-Chain Relayer
-    participant GatewayDestination as IERC7786Receiver (Chain B)
-    participant Receiver as Recipient
+    participant GatewaySource as IERC7786GatewaySource (Chain A)
+    participant Relayer as Relayer / Post‑Processing
+    participant GatewayDestination as Destination Gateway (Chain B)
+    participant Receiver as IERC7786Receiver
 
     User->>GatewaySource: sendMessage(destinationChain, receiver, payload, attributes)
-    Note over User: MUST accomplish CAIP-10 and CAIP-2
     GatewaySource->>GatewaySource: emit MessagePosted(outboxId, sender, receiver, payload, value, attributes)
-    GatewaySource->>Outbox: Update outbox for msg tracking
-
-    Note over RelayProcess: The post-processing or <br/> relaying step triggers eventually
-
-    RelayProcess->>GatewayDestination: executeMessage(sourceChain, sender, payload, attributes)
-    GatewayDestination->>GatewayDestination: Validation + parse message
-    GatewayDestination->>Receiver: Calls executeMessage(...) <br/> on receiver contract
-    Receiver-->GatewayDestination: returns IERC7786Receiver.executeMessage.selector
+    Note over Relayer: The post-processing or <br/> relaying step triggers eventually
+    Relayer->>GatewayDestination: preReceive(parameters) "This is ONLY illustrative"
+    GatewayDestination->>GatewayDestination: verify proof & parse message
+    GatewayDestination->>Receiver: executeMessage(messageId, sourceChain, sender, payload, attributes)
+    Receiver-->>GatewayDestination: returns IERC7786Receiver.executeMessage.selector
 ```
 
 ### ERC-7841: Cross-chain Message Format and Mailbox
@@ -121,15 +116,15 @@ sequenceDiagram
     MailboxB->>Recipient: handle(origin, sender, _message)
 ```
 
-## General Messaging Protocols
+## External Messaging Protocols
 
-Different protocols have been built to enable message passing between the chains they operate on. In principle, all of them function with their own security models and independently of the chain's operations and governance. Most prioritize speed over canonical bridges.
+Different protocols have been built to enable message passing between the chains they operate on. In principle, all of them function with their own security models and independently of the chain's operations and governance. Most prioritize speed over canonical bridges, as they operate under some degree of confirmation subjectivity.
 
 ### CCTP
 
-CCTP is a cross-chain protocol for transferring USDC between supported chains. It deploys the respective messenger contracts, where messages (burn and then mint) are orchestrated.
+[CCTP](https://developers.circle.com/stablecoins/cctp-getting-started) is a cross-chain protocol for transferring USDC between supported chains. It deploys the respective messenger contracts, where messages (burn and then mint) are orchestrated.
 
-- **V1**: Establishes the `MessageTransmitter` by defining `sendMessage`, which includes the destination, recipient, and `messageBody`, as well as the `receiveMessage` function. Users can self-relay. Senders can specify who is allowed to relay by using `sendMessageWithCaller`. Messages can be replaced before being received using `replaceMessage`.
+- **V1**: Establishes the `MessageTransmitter` by defining `sendMessage`, with destination, recipient, and `messageBody`, as well as the `receiveMessage` function. Users are able to self-relay. Senders can specify who is allowed to relay by using `sendMessageWithCaller`. Messages can be replaced before being received using `replaceMessage`.
 
 ```mermaid
 ---
@@ -157,7 +152,7 @@ sequenceDiagram
 
 ```
 
-- **V2**: `MessageTransmitterV2` defines `sendMessage` similarly to V1 but adds `finalityThresholdExecuted` and hooks for custom logic in the form of metadata. The `receiveMessage` function is adapted to work with these new functionalities. Other functions from V1 are not explicitly present in this version.
+- **V2**: `MessageTransmitterV2` defines `sendMessage` similarly to V1, but adds `destinationCaller` as a default parameter and includes `finalityThresholdExecuted`. The `receiveMessage` function is adapted to support these new features. A `replace` function, as seen in V1, is not explicitly present in this version.
 
 ```mermaid
 ---
@@ -185,6 +180,34 @@ sequenceDiagram
 
 ```
 
+### LayerZero
+
+[LayerZero](https://docs.layerzero.network/v2/developers/evm/technical-reference/api) is a generic messaging protocol that deploys an `EndpointV2` on each chain. Users invoke `send` on the source endpoint, optionally paying fees in either native tokens or the `lzToken`. Off-chain relayers verify and transport the message to the destination chain, where the `verify` (under validation flow) and `lzReceive` calls deliver the payload to the intended receiver contract. Additional features include allowing delegated calls, clearing queued messages with `clear`, and customizing fee payments or message parameters via `MessagingParams`.
+
+```mermaid
+---
+config:
+  theme: dark
+  fontSize: 48
+---
+
+sequenceDiagram
+    participant User
+    participant SourceEndpoint as EndpointV2 (Chain A)
+    participant Relayer as Off-Chain Relayer
+    participant DestinationEndpoint as EndpointV2 (Chain B)
+    participant Receiver
+
+    User->>SourceEndpoint: send(dstEid, receiver, message, options, payInLzToken)
+    SourceEndpoint->>SourceEndpoint: emit PacketSent(encodedPayload, options, sendLibrary)
+    Note over SourceEndpoint: Handling bridging <br/> logic off-chain
+    SourceEndpoint->>Relayer: Provide message data to be delivered
+    Note over Relayer,DestinationEndpoint: Validation flow
+    Relayer->>DestinationEndpoint: lzReceive(origin, guid, message, executor, extraData)
+    DestinationEndpoint->>DestinationEndpoint: emit PacketDelivered(origin, receiver)
+    DestinationEndpoint->>Receiver: Deliver message contents
+```
+
 
 ## Rollup Messaging Protocols
 
@@ -192,7 +215,7 @@ Most rollups have built-in messaging interfaces between L1 and L2. Some of them 
 
 ### Linea
 
-Linea deploys the corresponding messenger contracts on both L1 and L2. The relayers (called Postbots) listen for calls made on either side and deliver them to the destination. All cross-chain messages pass through this service, which provides replay protection.
+[Linea](https://docs.linea.build/technology/message-service) deploys the corresponding messenger contracts on both L1 and L2. The relayers (called Postbots) listen for calls made on either side and deliver them to the destination. All cross-chain messages pass through this service, which provides replay protection.
 
 The `sendMessage` function includes the value, recipient, fee to pay, and calldata, while `claimMessage` adds the fee recipient and nonce on top of those. Manual claiming is always available, especially used when no fee is set to be paid. For both flows, messages must first be verified against `MessageManager`. Additionally, for L2→L1 transfers, `claimMessageWithProof` is used, which includes a Merkle proof for final verification.
 
@@ -226,7 +249,7 @@ sequenceDiagram
 
 OP Stack deploys corresponding messenger contracts on both L1 and L2, as well as L2-to-L2 when interoperability is enabled at the protocol level. All of them include replay protection.
 
-- **L1→L2 / L2→L1**: This follows the `CrossDomainMessenger` library. The `sendMessage` function includes the target, value (in ETH), message data, and gas limit. The `relayMessage` function, in turn, includes the same parameters while adding the sender and nocce.
+- **[L1→L2 / L2→L1](https://specs.optimism.io/protocol/messengers.html)**: This follows the `CrossDomainMessenger` library. The `sendMessage` function includes the target, value (in ETH), message data, and gas limit. The `relayMessage` function, in turn, includes the same parameters while adding the sender and nocce.
     - L1→L2 operates on a push-based model, where sequencers process deposits when deemed safe, strictly following the order in which they were initiated.
     - L2→L1 follows a pull-based model, where withdrawals are in practice finalized asynchronously, executed through `finalizeWithdrawalTransaction`.
 
@@ -255,7 +278,7 @@ sequenceDiagram
     DestinationMessenger->>Recipient: Execute message contents
 
 ```
-- **L2→L2**: This has its own flow while still relying on the `sendMessage` and `relayMessage` concepts. Messages are sent directly from one L2 chain to another by specifying the destination chain ID, the target address, and the message payload. Once the message is validated via `CrossL2Inbox`, anyone can call `relayMessage` on the destination L2 by providing proof of the source event. This process remains asynchronous and can be finalized as soon as possible, depending on off-chain relayers and sequencers detecting and confirming initiated messages.
+- **[L2→L2](https://specs.optimism.io/interop/messaging.html)**: This has its own flow while still relying on the `sendMessage` and `relayMessage` concepts. Messages are sent directly from one L2 chain to another by specifying the destination chain ID, the target address, and the message payload. Once the message is validated via `CrossL2Inbox`, anyone can call `relayMessage` on the destination L2 by providing proof of the source event. This process remains asynchronous and can be finalized as soon as possible, depending on off-chain relayers and sequencers detecting and confirming initiated messages.
 
 ```mermaid
 ---
@@ -285,7 +308,7 @@ sequenceDiagram
 
 ### Scroll
 
-Scroll deploys messenger contracts on both L1 and L2. Cross-chain messages always go through these messengers, which provide replay protection.
+[Scroll](https://docs.scroll.io/en/developers/l1-and-l2-bridging/the-scroll-messenger/) deploys messenger contracts on both L1 and L2. Cross-chain messages always go through these messengers, which provide replay protection.
 
 The L1→L2 / L2→L1 flow follows the `ScrollMessengerBase` library. The `sendMessage` function includes the target, value (in ETH), message data, and gas limit. Both implementations define two `sendMessage` functions (one of them includes `refundAddress`; perhaps the refund mechanism is not actually implemented for withdrawals). The `relayMessage` function, in turn, includes the same parameters while also adding the sender and nonce.
 
@@ -319,4 +342,20 @@ sequenceDiagram
 
 # Comparison
 
-[WIP]
+The existing approaches are divided into proposed standards and actual implementations. While standards aim to be agnostic and broad to cover a wide range of use cases, actual implementations serve as references for what is included and how it is implemented.
+
+| **Standard (or protocol)** | **ERC-6170** | **ERC-7786** | **ERC-7841** | **ERC-7854** | **CCTP V1** | **CCTP V2** | **LayerZero** | **OP Stack L1/L2** | **OP Stack L2/L2** | **Linea** | **Scroll** |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| **What is it? (*Status*)** | Standard (Draft, merged at Dec 25, 2022) | Standard (Draft, merged at Dec 4, 2024) | Standard (Draft, open) | Standard (Draft, open) | Protocol (Implemented) | Protocol (Implemented) | Protocol (Implemented) | Protocol (Implemented) | Protocol (Devnet) | Protocol (Implemented) | Protocol (Implemented) |
+| Motivation / Main Use Case | Interface for message passers. | Interface for message passers. | Interface for message passers. Focused for L2s. | Interface for message passers. Focused on Ethereum ecosystem. | Message Layer for USDC cross-chain transfers. | Message Layer for USDC cross-chain transfers. | Message Layer for any cross-chain use cases. | Message Layer leveraged from underlying rollup security model. | Message Layer leveraged from underlying rollup security model. | Message Layer leveraged from underlying rollup security model. | Message Layer leveraged from underlying rollup security model. |
+| **VM Compatibility** | Intended to be agnostic. Usage of `bytes`  | Intended to be agnostic. It uses CAIP for this purpose. | Intended to be agnostic. It cointain a rationale explaining how to make it work in other VMs different from EVM. | Intended to be agnostic. ISM is modular to couple. | Multiple VMs. | Multiple VMs. | Multiple VMs. | - | - | - | - |
+| **Chain ID Format** | Custom `bytes`. Proposes each chain have a unique byte string ID (e.g. encode “ETH” or “ARB”.) | CAIP-2 (via CAIP-10). Used as `string` (e.g., `"eip155:1"` for Ethereum mainnet). This avoids relying on numeric IDs like EIP-155 exclusively. | Custom `uint32`. Expected to be EIP-155 or context-based. | Custom `uint32`. Expected to be EIP-155 or context-based. | Custom `uint32` chain identifiers called *domains*. | Custom `uint32` chain identifiers called *Endpoint IDs*. | Custom `uint32` chain identifiers defined as *Endpoint IDs*. | Not included, since it is implicit. | `uint256` to be EIP-155 based. | Not included, since it is implicit. | Not included, since it is implicit. |
+| **Main Entry Functions** | `sendMessage` and `receiveMessage`. | `sendMessage` via gateway, `executeMessage` on receiver. | `populateInbox()` and `recv()` on `Mailbox`. | `dispatch` and `process` on `Mailbox`, `handle` on recipient. | `sendMessage` and `receiveMessage`.. | `sendMessage` and `receiveMessage`. | `send` and `lzReceive`.  | `sendMessage` and `relayMessage`. | `sendMessage` and `relayMessage`. | `sendMessage` and `claimMessage`. | `sendMessage` and `relayMessage`. |
+| **Event Emissions** | `MessageSent`/`MessageReceived` | `MessagePosted` | Not defined | Not defined | `MessageSent`/`MessageReceived` | `MessageSent`/`MessageReceived`  | `PacketSent`/`PacketDelivered` | `SentMessage`/`RelayedMessage`  | `SentMessage`/`RelayedMessage` | `MessageSent`/`MessageClaimed`  | `SentMessage`/`RelayedMessage` |
+| **Extra Data Format** | Through raw `bytes`. | In `bytes[] attributes`. Extensible (e.g. custom bridging or gas instructions). | Via struct: `{ Message metadata, payload }`. | Via struct: `Message { version, nonce, origin, sender, destination, recipient, body }` | Through raw `bytes`. | Through raw `bytes`. | Payload + adapter params in `bytes`. No standard format, user-defined. | Through raw `bytes`. | Through raw `bytes`. | Through raw `bytes`. | Through raw `bytes`. |
+| **Message Validation/Safety** | Not addressed but pluggable. | Not addressed but pluggable. | Done before `recv` through relayer’s input in `populateInbox` via `aux` field or another source. | Defined via an ISM contract. | Attestation provided by Circle, used as an input during `receiveMessage`. | Attestation provided by Circle, used as an input during `receiveMessage`. | verify function is contained in the same contract, authenticated. | L1→L2: Validated by consensus. L2→L1: Validated by the proof system, authenticated. | Validated by consensus, authenticated. | L1→L2: Validated by consensus. L2→L1: Validated by the proof system. | L1→L2: Validated by consensus. L2→L1: Validated by the proof system. |
+| **Message Retries, Cancellations, Replacement or Claimback** | Not defined. | Not defined. | Not defined. Separate verification method might allow it. | Not defined. ISM might allow it. | Messages can be replaced. This is done as a separate implementation on top of `sendMessage`. | Not defined. | Messages can be retried. Also they might be erased in destination by calling a separate `clear` function. | Messages can be retried. | No explicit mechanisms. | No explicit mechanisms. | Messages can be claimed back if they are not picked to process in destination. |
+| **Gas/Fee Handling** | None built-in. Payable function + `data_` field can hold fee info. | Payable. `value` in event used for fees, plus flexible `attributes`. There is a value field. | None built-in. | Fee mechanism via its post-dispatch hooks (e.g. through `INTERCHAIN_GAS_PAYMASTER`) and add a quote function. | No fees. | No direct fees but hooks can include a payment logic. | Fee pay out in origin in `send`. | Deposits include L2 gas. Withdrawals cost are covered by who call `relayMessage`. | Not defined. | User may leave a tip, optional. | Deposits include L2 gas. Withdrawals cost are covered by who call `relayMessage`. |
+| **Bundling** | Single message. | Single message, but attributes can define some bundling logic. | `sessionId` can group messages. No atomic multi-call. | Yes, possible bundling through ISM validation to orchestrate it. | No bundling. | Yes, limited to “mint + 1 contract call”. | Single message, but attributes can define some bundling logic. `guid`/`compose`can coordinate multiple packets. | Single call invocation. | Single call invocation. | Single call invocation. | Single call invocation. |
+| **Pull/Push Support** | Not defined (but it could given its simplicity) | Explicitly supports both. | Supported via separate mailbox contracts | Supported; e.g. integration with synchronous L2s like Superchain outlined. | Support both. | Support both. | Support both. | Push in deposits. Pull in withdrawals. | Support both. | Push in deposits. Pull still available. Pull in withdrawals. | Push in deposits. Pull in withdrawals. |
+| **Modularity** | Simple Interface. | Gateway + attributes give modularity open to implementers. | Modular: mailbox split by sync/async, attributes via metadata, inbox logic separate. | Highly modular: ISMs, Hooks, message structure, full plug-and-play components | Implementation attached to their use cases. | Implementation attached to their use cases. | Modular since it has core + pluggable Send/Receive libraries, DVN & Executor choice, composer for follow‑ups, all under the LayerZero definitions. | Mostly monolithic. | Mostly monolithic. | Mostly monolithic. | Mostly monolithic. |
