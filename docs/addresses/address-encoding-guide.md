@@ -65,3 +65,40 @@ Starting from:
     - Chain reference: `45296998a6f8e2a784db5d9f95e18fc23f70441a1039446801089879b08c7ef0`. (Solana Mainnet genesis blockhash)
     - Address: `5333498d5aea4ae009585c43f7b8c30df8e70187d4a713d134f977fc8dfe0b5`
 
+### Showing an Interoperable Address
+While the algorithm above allows us to make sense of an Interoperable Address, it is not enough to be able to display it in a way that users will find meaningful or even familiar. For that, we have to rely on the suggested human-readable name format at the beginning of this section.
+
+Starting where the last example left off:
+
+Chain namespace
+: `0002`, solana
+
+Chain reference
+: `45296998a6f8e2a784db5d9f95e18fc23f70441a1039446801089879b08c7ef0`. (Solana Mainnet genesis blockhash)
+
+Address
+: `5333498d5aea4ae009585c43f7b8c30df8e70187d4a713d134f977fc8dfe0b5`
+
+Let's try to fit that into the `<account>@<chain>#<checksum>` format:
+
+1. Chain id: `solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdpKuc147dw2N9d`
+    - human-readable representation of namespace: `solana`
+    - separator: always `:`
+    - human-readable representation of chain reference, referring to Appendix A:
+        > In the human-readable name, it should be displayed in full and base58btc-encoded, as returned by the node.
+
+        display the 32 bytes `45296998a6f8e2a784db5d9f95e18fc23f70441a1039446801089879b08c7ef0` base58btc-encoded: `5eykt4UsFv8P8NJdTREpY1vzqKqZKvdpKuc147dw2N9d`
+2. Address: Referring to Appendix B:
+    > base58btc public keys should be decoded and stored as a 32 byte payload
+
+    ... the inverse for that will be to base58btc encode the 32-byte payload :grin: 
+    from `5333498d5aea4ae009585c43f7b8c30df8e70187d4a713d134f977fc8dfe0b5` to `MJKqp326RZCHnAAbew9MDdui3iCKWco7fsK9sVuZTX2`
+3. Checksum: 
+    > calculated by computing the keccak256 hash of the concatenated `Chainidlen`, `Chainid`, `Addrlen` and `Address` fields of the binary representation (that is, the v1 binary representation skipping the `Version` field), and truncating all but the first 4 bytes of the output. Represented as a base16 string as defined in RFC-4648
+
+
+    - Interoperable Address sans the 'version' field is `000122000245296998a6f8e2a784db5d9f95e18fc23f70441a1039446801089879b08c7ef0205333498d5aea4ae009585c43f7b8c30df8e70187d4a713d134f977fc8dfe0b5`.
+    - The keccak256 of the above is `0xaa7e9354e0bdd58d51688fdbcba0e4a77efe398198e1683752f1c1188e44d90d`
+    - First 4 bytes, in uppercase base16: `AA7E9354`
+4. Tying it all together: `5eykt4UsFv8P8NJdTREpY1vzqKqZKvdpKuc147dw2N9d@solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdpKuc147dw2N9d#AA7E9354`
+
