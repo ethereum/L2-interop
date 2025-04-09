@@ -42,8 +42,8 @@ The algorithm for serializing it to an Interoperable Address is as follows:
 7. Serialize the address, in this case 20 raw bytes: `[D8DA6BF26964AF9D7EED9E03E53415D37AA96045]`.
 8. Compute the length of the above, in this case `20 == 0x14`
 9. Append the length as a single byte: `[0001 03 000001 14]`
-10. Append the address from step 7: `[0001 03 000001 D8DA6BF26964AF9D7EED9E03E53415D37AA96045]`
-11. Done! Interoperable Address v1 is the 26-byte payload: `000103000001D8DA6BF26964AF9D7EED9E03E53415D37AA96045`
+10. Append the address from step 7: `[0001 03 000001 14 D8DA6BF26964AF9D7EED9E03E53415D37AA96045]`
+11. Done! Interoperable Address v1 is the 26-byte payload: `00010300000114D8DA6BF26964AF9D7EED9E03E53415D37AA96045`
 
 [^1]: Note that you can't assume integers on an arbitrary runtime to be big-endian, e.g. version `256` will be stored on memory as `0100` on big-endian runtimes vs `0001` on little-endian ones, so you'll most likely have to perform this transformation explicitly.
 
@@ -54,7 +54,7 @@ Starting from:
 ```
 
 1. Take the first two bytes and interpret them as a big-endian integer: `0x0001 == 1`. We know how to parse version 1, so we can proceed. Remaining payload: `[22000245296998a6f8e2a784db5d9f95e18fc23f70441a1039446801089879b08c7ef0205333498d5aea4ae009585c43f7b8c30df8e70187d4a713d134f977fc8dfe0b5]`
-2. Take the next byte, `0x22 == 34`. This is the length of the chainid. Remaining payload: `[205333498d5aea4ae009585c43f7b8c30df8e70187d4a713d134f977fc8dfe0b5]`
+2. Take the next byte, `0x22 == 34`. This is the length of the chainid. Remaining payload: `[000245296998a6f8e2a784db5d9f95e18fc23f70441a1039446801089879b08c7ef0205333498d5aea4ae009585c43f7b8c30df8e70187d4a713d134f977fc8dfe0b5]`
 3. Parse next 34 bytes as the chainid: `000245296998a6f8e2a784db5d9f95e18fc23f70441a1039446801089879b08c7ef0`, remaining payload: `[205333498d5aea4ae009585c43f7b8c30df8e70187d4a713d134f977fc8dfe0b5]`
     1. Take the first two bytes (`0002`) and look them up in the table in Appendix A: the chain _namespace_ corresponding to `0002` is 'solana'
     2. The remaining 32 bytes are the chain _reference_: `45296998a6f8e2a784db5d9f95e18fc23f70441a1039446801089879b08c7ef0`. We will have to refer back to appendix A later, to know how to display it to users.
