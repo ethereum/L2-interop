@@ -108,7 +108,7 @@ This section is non-normative.
 The previous section ended with an unambiguous but verbose representation of the Interoperable Address. Wallets are free to improve upon said representation, replacing the `address` and `chainid` fields with more human-readable alternatives.
 
 ### Chainid
-For non-EVM chains, wallets could use a shorter format with a private mapping functioning as a layer-zero registry. For example, they may replace `solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdpKuc147dw2N9d` with `solana:mainnet` or even `solana`. Wallets may reference the CASA namespaces as a repository of chain types and popular names for them.
+For non-EVM chains, wallets could use a shorter format with a private mapping functioning as a layer-zero registry. For example, they may replace `solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdpKuc147dw2N9d` with `solana:mainnet` or even `solana`. Wallets may reference the [CASA] namespaces as a repository of chain types and popular names for them.
 
 In the case of EVM chains, wallets could refer to [ethereum-lists/chains](https://github.com/ethereum-lists/chains) and use the shortnames defined there, replacing:
 - `eip155:1` -> `eth`
@@ -120,28 +120,37 @@ Ideally, this will be solvable without trusting centralized actors when standard
 ### Address
 Wallets are recommended to use existing naming registries to show _names_ to the user in place of _addresses_. The following is a guide on how to implement multi-chain lookup on ENS as an example, but wallets are encouraged to support other naming registries as well.
 
-While ENS was initially focused on Ethereum Mainnet, since the introduction of ENSIP-9 and ENSIP-11 it is possible to resolve a name to an address in any chain supported by SLIP-44 or eip155 via the following algorithm:
+While ENS was initially focused on Ethereum Mainnet, since the introduction of [ENSIP-9] and [ENSIP-11] it is possible to resolve a name to an address in any chain supported by [SLIP-44] or eip155 via the following algorithm:
 
 #### `address -> name` resolution
 1. Start by knowing `chainId` and `address`, presumably from parsing an Interoperable Address as described in [the above section](#parsing-an-interoperable-address).
-2. Convert `chainId` from step above into ENSIP-11 `coinType`
-3. Compute the namehash for the ENSIP-19 reverse resolution from the results of step 1 and 2. Will look something like `<address>.<cointype>.reverse`
+2. Convert `chainId` from step above into [ENSIP-11] `coinType`
+3. Compute the namehash for the [ENSIP-19](https://docs.ens.domains/ensip/19/) reverse resolution from the results of step 1 and 2. Will look something like `<address>.<cointype>.reverse`
 4. Call `resolver(bytes32 node)`on the ENS registry contract, using the value from the step above for `node`.
 5. Call `name(bytes32 node)` on the contract returned by the step above. Save the response as the `<punycode-encoded name>`.
-6. Check direct resolution of name obtained in the step above, and fail the resolution if it does not match, as described in ENSIP-19
+6. Check direct resolution of name obtained in the step above, and fail the resolution if it does not match, as described in [ENSIP-19]
 7. Convert `<punycode-encoded name>` into unicode and display it to the user
 
 #### `name -> address ` resolution
-1. Let the user input a destination chain name in whatever format the wallet chooses to support, and convert it to a CAIP-2 chainId.
-2. Convert the result from step 1 into an ENSIP-11 `coinType`.
+1. Let the user input a destination chain name in whatever format the wallet chooses to support, and convert it to a [CAIP-2] chainId.
+2. Convert the result from step 1 into an [ENSIP-11] `coinType`.
 3. Let the user input a unicode string instead of the punycode-encoded name.
 4. Convert the string from step 3 into a punycode-encoded name.
 5. Compute the punycode-encoded name's namehash.
-6. Call `addr(namehash, coinType)` on the wallet's default resolver, with the values from steps 5 and 2 respectively. This will return a byte array which as to be interpreted according to the instructions in ENSIP-9. Ideally, the algorithm would match the one on appendix B, and therefore the returned value could be used to construct the Interoperable Address directly. But it's possible that they differ for some chain and some ad-hoc conversion is warranted for specific chains and address types. Abstracting this away should be the focus of a wallet-focused Interoperable Address SDK.
+6. Call `addr(namehash, coinType)` on the wallet's default resolver, with the values from steps 5 and 2 respectively. This will return a byte array which as to be interpreted according to the instructions in [ENSIP-9]. Ideally, the algorithm would match the one on appendix B, and therefore the returned value could be used to construct the Interoperable Address directly. But it's possible that they differ for some chain and some ad-hoc conversion is warranted for specific chains and address types. Abstracting this away should be the focus of a wallet-focused Interoperable Address SDK.
     - Failure mode: name is not registered on ENS for the given chain.
 7. Construct Interoperable Address with the address returned in step 6 and the destination chain from step 1.
 8. The user should obviously not be prompted for the checksum, but it should be displayed somewhere in the wallet UI.
 
 #### Further reading
-- It's possible that the lookup information is not present on-chain, but instead the on-chain registry points to an off-chain location for further resolution. If you want to implement support for that, refer to ENSIP-10 and ENSIP-16.
-- ENS has special treatment of ethereum mainnet / cointype `60` for backwards compatibility reasons, refer to ENSIP-9 and ENSIP-11 for details.
+- It's possible that the lookup information is not present on-chain, but instead the on-chain registry points to an off-chain location for further resolution. If you want to implement support for that, refer to [ENSIP-10] and [ENSIP-16].
+- ENS has special treatment of ethereum mainnet / cointype `60` for backwards compatibility reasons, refer to [ENSIP-9] and [ENSIP-11] for details.
+
+[CASA]: https://namespaces.chainagnostic.org/
+[CAIP-2]: https://chainagnostic.org/CAIPs/caip-2
+[SLIP-44]: https://github.com/satoshilabs/slips/blob/master/slip-0044.md
+[ENSIP-9]: https://docs.ens.domains/ensip/9
+[ENSIP-10]: https://docs.ens.domains/ensip/10
+[ENSIP-11]: https://docs.ens.domains/ensip/11
+[ENSIP-16]: https://docs.ens.domains/ensip/16
+[ENSIP-19]: https://docs.ens.domains/ensip/19
