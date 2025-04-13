@@ -22,6 +22,9 @@ Discussions and collaborations in this repository focus on delivering concrete r
 1. **Review the Specifications**  
     Check the [specs/](./specs/) directory for technical details, protocol specifications, and design decisions that underpin the interoperability efforts.
 
+1. **Working Group Meeting Notes**  
+    Check out the [meeting call notes](https://notes.ethereum.org/@rudolf/interop-all-notes/) to stay up to date on discussions.
+
 ## Contributing
 
 We welcome contributions from the community! Please take a moment to review our [Contribution Guidelines](./CONTRIBUTING.md) before getting started. Your input is valuable, and we aim to maintain a collaborative and inclusive environment for everyone.
