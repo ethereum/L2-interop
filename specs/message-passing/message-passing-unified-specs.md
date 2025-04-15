@@ -48,7 +48,7 @@ interface IGateway {
   // Optional Hook data struct
   struct HookData {
     bytes hookPayload;   // Low-level call data: selector and parameters for the hook
-     ILocalAddress hook;  // Local origin chain address
+    ILocalAddress hook;  // Local origin chain address
     uint256 value;       // Optional, amount of native token forwarded to the hook 
   }
  
