@@ -37,36 +37,38 @@ The payload is an opaque `bytes` value. The Extra Data encodes optional logic 
 
 ### Hooks
 
-A hook is any contract logic that the application developer wants to execute after a message is sent from the origin chain. They make it possible for developers to include any external logic apart from the underlying message protocol entry point when sending a message. Hooks are encapsulated under a struct that contains the hook payload, and the address of the hook, which must be compliant with a binary representation of Interoperable Address and value. Hooks are never part of the message delivered to the recipient; they only affect the execution environment on the origin chain.
+A hook is any contract logic that the application developer wants to execute after a message is sent from the origin chain. They make it possible for developers to include any external logic apart from the underlying message protocol entry point when sending a message. Hooks are encapsulated under a struct that contains the hook payload, and the local address of the hook, and value. Hooks are never part of the message delivered to the recipient; they only affect the execution environment on the origin chain.
 
 ### Interfaces
 
-Smart contracts interact with a `Gateway` to send and receive messages.Using hooks (`HookData`) is optional.
+Smart contracts interact with a `Gateway` to send and receive messages. Using hooks (`HookData`) is optional.
 
 ```solidity
 interface IGateway {
   // Optional Hook data struct
   struct HookData {
-	bytes hookPayload;   // Low-level call within its parameters
-	ILocalAddress hook;  // Local Address
-	uint256 value;       // Optional, native token forwarded to the hook 
-	}
+    bytes hookPayload;   // Low-level call data: selector and parameters for the hook
+     ILocalAddress hook;  // Local origin chain address
+    uint256 value;       // Optional, amount of native token forwarded to the hook 
+  }
  
+  // MessageSent event
   event MessageSent(
-	bytes32 outboxId,          // Unique ID (may be 0 if the gateway doesn’t track)
-    	bytes sender,              // Binary Interoperable Address representation
-    	bytes recipient,           // Binary Interoperable Address representation
-    	bytes payload,             // Raw bytes of message content
-    	bytes calldata extraData,   // Optional encoded gateway metadata (leave empty if unused)
-    	HookData calldata hookData  // Optional Hook data
-  	);
+    bytes32 outboxId,  // Unique outbox ID (may be 0 if the gateway doesn’t track)
+    bytes sender,      // Binary Interoperable Address
+    bytes recipient,   // Binary Interoperable Address
+    bytes payload,     // Message content
+    bytes extraData,   // Optional encoded gateway metadata (leave empty if unused)
+    HookData hookData  // Optional Hook data 
+  );
   
+  // sendMessage function
   function sendMessage(
-	  bytes calldata recipient,   // Binary Interoperable Address representation
-	  bytes calldata payload,     // Raw bytes of message content
-	  bytes calldata extraData,   // Optional encoded gateway metadata (leave empty if unused)
-	  HookData calldata hookData  // Optional Hook data
-  	) external payable returns (bytes32 outboxId);  // Unique ID (may be 0 if the gateway doesn’t track)
+      bytes calldata recipient,                   // Binary Interoperable Address 
+      bytes calldata payload,                     // Message content
+      bytes calldata extraData,                   // Optional encoded gateway metadata (leave empty if unused)
+      HookData calldata hookData                  // Optional Hook data
+  ) external payable returns (bytes32 outboxId);  // Unique ID (may be 0 if the gateway doesn’t track)
 }
 ```
 
@@ -74,11 +76,11 @@ The destination `IGateway` is out of scope in this specification. Its responsibi
 
 ```solidity
 interface IMessageRecipient {
-	function receiveMessage(
-	  bytes32 messageId,  // Unique ID supplied by the destination gateway
-	  bytes sender,       // Binary Interoperable Address representation
-	  bytes payload       // Raw bytes of message content
-	) external payable;
+    function receiveMessage(
+        bytes32 messageId,  // Unique ID supplied by the destination gateway
+        bytes sender,       // Binary Interoperable Address representation
+        bytes payload       // Message content
+    ) external payable;
 }
 ```
 
@@ -183,7 +185,7 @@ This design is an incremental evolution based on ERC-7786 and other related stan
 
 - **Unchanged core API:** send and receive messages behave exactly as in ERC-7786. Adapters would remain the same way.
 - **Safety / Liveness expectations**: All guarantees listed in ERC-7786 are inherited unchanged.
-- Event-driven tracking: an `outboxId` is still emitted on the origin chain, and a `messageId` is returned on the destination chain.
+- **Event-driven tracking**: an `outboxId` is still emitted on the origin chain, and a `messageId` is provided by the relaying/deliver step on the destination chain.
 
 **What is added**
 
