@@ -4,7 +4,7 @@
 
 ## Context
 
-We propose a “unified” cross‑chain‑messaging interface that starts from ERC‑7786 and borrows useful ideas from ERC‑6170, ERC‑7854, and the Interop Working Group discussions.
+We propose a “unified” cross‑chain‑messaging interface that starts from [ERC‑7786](https://github.com/ethereum/ERCs/blob/448902e83117f175b4f682fb2d60545709df8cef/ERCS/erc-7786.md) and borrows useful ideas from [ERC‑6170](https://github.com/ethereum/ERCs/blob/448902e83117f175b4f682fb2d60545709df8cef/ERCS/erc-6170.md), [ERC‑7854](https://github.com/ethereum/ERCs/pull/817), and the [Interop Working Group discussions](https://github.com/ethereum/L2-interop/pull/13).
 
 The primary audience is application developers, who need a predictable, ergonomic API rather than a patchwork of bridge‑specific contracts.
 
@@ -18,26 +18,26 @@ This draft keeps 7786’s proven core but adds just enough opinionated structure
 
 A complete specification primarily consists of four logical building blocks:
 
-1. **Gateway:** The canonical entry point API for the cross‑chain message flow. On the origin chain, it lets contracts send messages, emits a tracking event, and (optionally) invokes hook calls. On the destination chain, each implementation provides its own Destination Gateway, which is responsible for verifying the proof and delivering the message to the recipient.
-2. **Recipient Interface**: A minimal contract API that must be implemented by any application wishing to receive messages.
-3. Message: The envelope that travels cross‑chain: sender, recipient, payload, and extra data (implementation‑specific).
+1. **Gateway:** The canonical entry point API for the cross‑chain message flow. On the origin chain, it lets contracts send messages, emits a tracking event, and (optionally) invokes hook calls. On the destination chain, each implementation provides its own Destination Gateway, which might be responsible for verifying the proof and delivering the message to the recipient.
+2. **Recipient Interface**: A minimal contract API that must be implemented by any contract wishing to receive cross-chain messages.
+3. **Message**: The cross-chain data structure containing sender, recipient, payload, and implementation-specific extra data required by the underlying bridge to handle delivery or verification.
 4. **Hooks**: Opt‑in extension points that let developers run arbitrary logic before or after the sending, without polluting the Gateway surface.
 
 ### Message Field Encoding
 
-A cross-chain message consists of a is sender/recipient, payload, extra data and hooks.
+A cross-chain message includes sender and recipient addresses, a payload, extra data, and optional hooks.
 
 ### Sender and Recipient
 
-Binary interoperable addresses (ERC‑XXXX), containing the account address and chain identifier (from CAIP‑2).
+Binary interoperable addresses ([ERC‑XXXX](https://github.com/ethereum/ERCs/pull/1002)), containing the account address and chain identifier (from CAIP‑2).
 
 ### Payload and Extra Data
 
-The payload is an opaque `bytes` value. The Extra Data supplies any extra logic (e.g. low-level call) that developer wants to execute inside in the underlying message protocol logic.
+The payload is an opaque `bytes` value. The Extra Data encodes optional logic or metadata (such as low-level calls) that the underlying messaging protocol should process during delivery.
 
 ### Hooks
 
-A hook is any contract that should be executed around the core message sending. They make it possible for developers to include any external logic apart from the underlying message protocol entry point when sending a message. Hooks are encapsulated under a struct that contains the hook payload, and the address of the hook, which must be compliant with a binary representation of Interoperable Address and value. Hooks are never part of the message delivered to the recipient; they only affect the execution environment on the origin chain.
+A hook is any contract logic that the application developer wants to execute after a message is sent from the origin chain. They make it possible for developers to include any external logic apart from the underlying message protocol entry point when sending a message. Hooks are encapsulated under a struct that contains the hook payload, and the address of the hook, which must be compliant with a binary representation of Interoperable Address and value. Hooks are never part of the message delivered to the recipient; they only affect the execution environment on the origin chain.
 
 ### Interfaces
 
@@ -47,26 +47,26 @@ Smart contracts interact with a `Gateway` to send and receive messages.Using hoo
 interface IGateway {
   // Optional Hook data struct
   struct HookData {
-	  bytes hookPayload;  // Low-level call within its parameters
- 	  ILocalAddress hook; // Binary Interoperable Address
-	  uint256 value;      // Optional, native token forwarded to the hook 
-	  }
+	bytes hookPayload;   // Low-level call within its parameters
+	ILocalAddress hook;  // Local Address
+	uint256 value;       // Optional, native token forwarded to the hook 
+	}
  
   event MessageSent(
-    bytes32 outboxId,          // Unique ID (may be 0 if the gateway doesn’t track)
-    bytes sender,              // Binary Interoperable Address
-    bytes recipient,           // Binary Interoperable Address
-    bytes payload,             // Message content
-	  bytes calldata extraData,  // Gateway-specific hints, in some cases is not required
-	  HookData calldata hookData // Optional Hook data
-  );
+	bytes32 outboxId,          // Unique ID (may be 0 if the gateway doesn’t track)
+    	bytes sender,              // Binary Interoperable Address representation
+    	bytes recipient,           // Binary Interoperable Address representation
+    	bytes payload,             // Raw bytes of message content
+    	bytes calldata extraData,   // Optional encoded gateway metadata (leave empty if unused)
+    	HookData calldata hookData  // Optional Hook data
+  	);
   
   function sendMessage(
-~~~~	  bytes calldata recipient,  // Binary Interoperable Address 
-	  bytes calldata payload,    // Message content
-	  bytes calldata extraData,  // Gateway‑specific parameters (may be empty)
-	  HookData calldata hookData // Optional Hook definition
-  ) external payable returns (bytes32 outboxId); // Unique ID (0 if unused)
+	  bytes calldata recipient,   // Binary Interoperable Address representation
+	  bytes calldata payload,     // Raw bytes of message content
+	  bytes calldata extraData,   // Optional encoded gateway metadata (leave empty if unused)
+	  HookData calldata hookData  // Optional Hook data
+  	) external payable returns (bytes32 outboxId);  // Unique ID (may be 0 if the gateway doesn’t track)
 }
 ```
 
@@ -75,9 +75,9 @@ The destination `IGateway` is out of scope in this specification. Its responsibi
 ```solidity
 interface IMessageRecipient {
 	function receiveMessage(
-	  bytes32 messageId, // Unique ID supplied by the destination gateway
-    bytes sender,      // Binary Interoperable Address representation
-    bytes payload      // Raw bytes of message content
+	  bytes32 messageId,  // Unique ID supplied by the destination gateway
+	  bytes sender,       // Binary Interoperable Address representation
+	  bytes payload       // Raw bytes of message content
 	) external payable;
 }
 ```
@@ -116,7 +116,6 @@ sequenceDiagram
     participant Recipient as IMessageRecipient
 
     User->>MailboxA: dispatch(destinationDomain, recipientAddress, body, customHookMetadata...)
-    Note over MailboxA: Handling bridging <br/> logic off-chain <br/> Hook calls
     MailboxA->>MailboxA: emit Dispatch (sender, destination, recipient, message)
     MailboxA->>MailboxA: emit DispatchId (messageId)
     MailboxA->>Relayer: Off-chain bridging flow
@@ -143,10 +142,9 @@ sequenceDiagram
     participant Recipient as IMessageRecipient
 
     User->>GatewayA: sendMessage(recipient, payload, extraData, hookData)
-    Note over GatewayA: Handling bridging <br/> logic off-chain
     GatewayA->>HookA: hookData
-    GatewayA-->>Relayer: Off-chain bridging flow
     GatewayA->>GatewayA: MessageSent (messageId, sender, recipient, payload)
+    GatewayA-->>Relayer: Off-chain bridging flow
 
     Note over GatewayB: using deliverMessage as example method, destination Gateway is out of scope
     Relayer-->>GatewayB: deliverMessage(metadata, message)
@@ -179,7 +177,7 @@ graph TD
 
 ## Rationale and Discussions
 
-This design is an incremental alignment from what is best0 and evolve from ERC-7786 and other standards contributions.
+This design is an incremental evolution based on ERC-7786 and other related standards, aligning progressively with what is considered best practice.
 
 **What stays the same**
 
@@ -197,7 +195,7 @@ This design is an incremental alignment from what is best0 and evolve from ERC-7
 
 ERC-7786 introduces attributes (key/value blobs interpreted by the gateway). Hooks fill the same niche but with two advantages:
 
-1. Arbitrary Logic: A hook is an external contract (often immutable) that runs any code the gateway’s `msg.sender` is authorized to execute. Developers are not limited to the selectors that the gateway happened to implement. So, They let developers import new selectors (functions) that the gateway never anticipated.
+1. Arbitrary Logic: A hook is external contract logic that the message sender wants to execute. Hooks remove the limitation of relying solely on the selectors implemented by the Gateway, enabling developers to execute arbitrary functions the Gateway didn’t originally anticipate.
 2. No bloat for minimal gateways: A bare-bones gateway doesn’t need to parse or store attribute blobs. If a project wants richer behavior, it can deploy its own hook contract.
 3. Isolate risk: if a hook misbehaves, only that hook’s callers are affected, the core gateway remains simple and auditable.
 
