@@ -29,7 +29,7 @@ A cross-chain message includes sender and recipient addresses, a payload, extra 
 
 ### Sender and Recipient
 
-Binary interoperable addresses ([ERC‑XXXX](https://github.com/ethereum/ERCs/pull/1002)), containing the account address and chain identifier (from CAIP‑2).
+Binary interoperable addresses (see [ERC‑7930](https://github.com/ethereum/ERCs/pull/1002)), containing the account address and chain identifier (from CAIP‑2).
 
 ### Payload and Extra Data
 
@@ -190,7 +190,7 @@ This design is an incremental evolution based on ERC-7786 and other related stan
 **What is added**
 
 - **Hooks (optional):** A  `HookData` struct lets a project plug in fee payment, logging, batched calls, callbacks or any other external logic without bloating the base call.
-- **Future‑proof addressing:** Binary interoperable addresses (ERC-XXXX); 7786 plans to adopt the same format, so this is forward‑compatible.
+- **Future‑proof addressing:** Binary interoperable addresses ([ERC-7930](https://github.com/ethereum/ERCs/pull/1002)); 7786 plans to adopt the same format, so this is forward‑compatible.
 - **Clear separation of concerns**: `extraData` tweaks behavior inside the gateway, while `HookData` runs code outside the gateway.
 
 **Hooks vs. Attributes**
@@ -214,7 +214,7 @@ ERC-7786 introduces attributes (key/value blobs interpreted by the gateway). Hoo
 | --- | --- | --- | --- | --- |
 | **Renames** | `Gateway`, `sendMessage`, `executeMessage` | `Mailbox`, `dispatch`, `process`, `handle` | `Gateway`, `sendMessage`, `receiveMessage` | Fresh terminology around more common conventions. |
 | **Message Struct** | No explicit struct. Parameters are passed directly: `destinationChain` (or `sourceChain`), `receiver` (or `sender`), `payload`, `attributes`. | Contains: `version`,  `nonce`,  `origin`,  `sender`,  `destination`, `recipient`, `body`. | No explicit struct. `Parameters` are passed directly: `sender` (or  `recipient`) `payload`, `extraData`, `HookData`, and `messageId` in destination. | Simpler surface; extra inputs stays in `extraData` or `HookData` instead of bloating the envelope. |
-| **Chain identifier and addresses** | `string` based; follows CAIP rules. There is an intention to support binary representations and interoperable addresses. | Uses `uint32` and `bytes32` without defined standards. | Under development binary interoperable address, in `bytes`. | Chain-agnostic and accommodate the address efforts in the interop group. |
+| **Chain identifier and addresses** | `string` based; follows CAIP rules. There is an intention to support binary representations of [interoperable addresses](https://github.com/ethereum/ERCs/pull/1002). | Uses `uint32` and `bytes32` without defined standards. | Under development binary interoperable address, in `bytes`. | Chain-agnostic and accommodate the address efforts in the interop group. |
 | Message identifiers | Gateway generates an `outboxId` in origin and `messageId` to be used in the destination. | Defined in the struct with `nonce`. | `outboxId` (origin event) and `messageId` (destination callback). | Leaves identifier format to the transport layer while giving explorers two stable anchors. |
 | **Events** | Only `MessagePosted`. | Not defined in the standard. It's worth to add Hyperlane’s implementation introduces `Dispatch`, `DispatchId`, `ProcessId`, and `Process` events. | Defined as `MessageSent`  in the origin Gateway. | One standardised event makes indexing uniform and keeps the destination side stateless. |
 | **Post sending messages / Hooks Declaration** | Under `attributes`, as an optional feature. | Part of `dispatch` as `calldata` with appointed interface. | Encapsulated under `Hookdata` struct, (`hook`, `hookPayload` and `value`). Executed outside the gateway. | Hooks give full flexibility without bloating the core API; gateways that don’t need them can ignore the field. |
