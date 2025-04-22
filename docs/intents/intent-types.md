@@ -15,12 +15,6 @@ A CrossChainOrder is initiated (gasless or not gasless) and is resolved even whe
 For a gasless cross-chain Flow:
 
 ```mermaid
----
-config:
-  theme: dark
-  fontSize: 48
----
-
 sequenceDiagram
     participant User
     participant Filler
@@ -31,7 +25,6 @@ sequenceDiagram
     Filler->>OriginSettler: openFor(order, signature, originFillerData)
     OriginSettler->>OriginSettler: emit Open(orderId, resolvedOrder)
     Note over OriginSettler: Emits Open with fill instructions
-    Note over Filler: Bridging or messaging flow to <br/> relay fill data cross-chain
 
     Filler->>DestinationSettler: fill(orderId, originData, fillerData)
     DestinationSettler->>DestinationSettler: Validates & finalizes fill
@@ -40,12 +33,6 @@ sequenceDiagram
 For an on-chain cross-chain flow:
 
 ```mermaid
----
-config:
-  theme: dark
-  fontSize: 48
----
-
 sequenceDiagram
     participant User
     participant OriginSettler as IOriginSettler (Chain A)
@@ -69,9 +56,9 @@ This standard intentionally does not prescribe the specifics of final settlement
 ```mermaid
 sequenceDiagram
     participant P1 as User
-    participant SC as Source Chain
+    participant SC as HTLC Contract (Chain A)
     participant P2 as Solver
-    participant DC as Destination Chain
+    participant DC as HTLC Contract (Chain B)
 
 
     P1->>SC: commit()
