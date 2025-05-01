@@ -31,3 +31,28 @@
 - Next steps
     - Gather more examples of potential hooks to understand their value
     - Specify exactly how the gateway should invoke hooks
+
+## Call #2 (2025-05-01)
+
+- Glacis adapter compliance with ERC-7786
+    - Link: https://www.notion.so/glacislabs/7786-Conversion-1e67a3452406806fa7d8fce81c07eb94
+    - Option A: Make Glacis Router compliant
+        - Higher level
+        - Handles fees, quorum/multisend, retries
+            - Would require use of attributes for these features
+    - Option B: Make adapters compliant
+        - Very close to an ERC-7786 Gateway
+        - Includes gas payment
+            - Can this be decoupled? Yes but more work
+        - May need to finish gas payment spec before working on code changes
+            - See Catalyst and Hyperlane for inspiration on different fee mechanisms
+            - Can be done by taking fees implicitly
+        - LayerZero, Wormhole, Axelar, CCIP, Hyperlane
+            - Wormhole uses standard relayers
+        - Adapters have some admin-gated functionality / configurability
+            - RemoteCounterpartManager
+                - configure source/destination adapter pairs
+            - chainId mappings
+        - ✔ Seems like the way to go
+- Hooks
+    - See [Hooks Explainer](https://github.com/ethereum/L2-interop/pull/39/files#diff-9dd6a6c891082f3fb3b42f751c1dac4f9bfafc6113fff1acf93aef2dfae40035)
