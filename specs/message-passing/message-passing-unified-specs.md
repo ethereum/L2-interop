@@ -39,6 +39,8 @@ The payload is an opaque `bytes` value. The Extra Data encodes optional logic 
 
 A hook is any contract logic that the application developer wants to execute after a message is sent from the origin chain. They make it possible for developers to include any external logic apart from the underlying message protocol entry point when sending a message. Hooks are encapsulated under a struct that contains the hook payload, and the local address of the hook, and value. Hooks are never part of the message delivered to the recipient; they only affect the execution environment on the origin chain.
 
+See more on Hooks [here](./hooks-explainer.md).
+
 ### Interfaces
 
 Smart contracts interact with a `Gateway` to send and receive messages. Using hooks (`HookData`) is optional.
@@ -193,18 +195,18 @@ This design is an incremental evolution based on ERC-7786 and other related stan
 - **Future‑proof addressing:** Binary interoperable addresses ([ERC-7930](https://github.com/ethereum/ERCs/pull/1002)); 7786 plans to adopt the same format, so this is forward‑compatible.
 - **Clear separation of concerns**: `extraData` tweaks behavior inside the gateway, while `HookData` runs code outside the gateway.
 
-**Hooks vs. Attributes**
-
-ERC-7786 introduces attributes (key/value blobs interpreted by the gateway). Hooks fill the same niche but with two advantages:
-
-1. Arbitrary Logic: A hook is external contract logic that the message sender wants to execute. Hooks remove the limitation of relying solely on the selectors implemented by the Gateway, enabling developers to execute arbitrary functions the Gateway didn’t originally anticipate.
-2. No bloat for minimal gateways: A bare-bones gateway doesn’t need to parse or store attribute blobs. If a project wants richer behavior, it can deploy its own hook contract.
-3. Isolate risk: if a hook misbehaves, only that hook’s callers are affected, the core gateway remains simple and auditable.
-
 `ExtraData` and `HookData`
 
 - **`extraData`**: small blobs consumed *inside* the gateway (relevant for adapters e.g., define the gas limit or a caller).
 - **`hookData`**: full contract calls executed *outside* the gateway (e.g., pay a relayer, emit custom analytics, trigger another bridge).
+
+**Hooks Explainer**
+
+Refer to [this document which expands about Hooks](./hooks-explainer.md).
+
+**ExtraData vs attributes**
+
+Refeter to [this document which compare both approaches](./attributes-vs-extradata.md).
 
 # Appendix
 
