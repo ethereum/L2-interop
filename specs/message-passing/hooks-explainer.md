@@ -1,5 +1,7 @@
 # Hooks Explainer
 
+_To see the whole picture of the proposed changes for message passing standard, please refer [here](./message-passing-unified-specs.md)._
+
 ## What are Hooks?
 
 **Hooks are extra actions that can run during the message flow.** They are composable and can change how things work without changing the messaging protocol.
@@ -56,7 +58,6 @@ Thus, the flow would be:
 - **Flexibility**: Gateways can support various gas payment systems without hardcoding them.
 - **Optionality**: If no hook is provided, no gas prepayment occurs.
 
----
 
 ## Additional Use Cases for Hooks (Origin Chain)
 
@@ -121,7 +122,7 @@ In order to ensure secure, controlled, and auditable execution of hooks, Gateway
     - If the hook call fails, the transaction reverts.
     - Gas forwarding can be capped if necessary.
 
-
+![hook-execution-design](./hook-execution-design.png)
 
 ## Example: Minimal Hook Executor
 
