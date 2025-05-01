@@ -1,5 +1,7 @@
 # bytes[] attributes vs bytes extraData
 
+_To see the whole picture of the proposed changes for message passing standard, please refer [here](./message-passing-unified-specs.md)._
+
 ## extraData Field
 
 Instead of requiring structured arrays of attributes, we propose to use a single `bytes extraData` field to encode optional gateway-specific metadata.
