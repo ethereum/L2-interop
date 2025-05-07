@@ -325,4 +325,4 @@ The parsing logic only inspects a fixed set of fields and does not allocate memo
 
 > 🛠️ This library is designed as a shared utility to encourage consistent handling of interoperable accounts across the ecosystem. Contributions and feedback are welcome as the standard evolves.
 
-> ⚠️ Please note that the design presented here serves as a foundational starting point for our work. As the development process progresses, certain details may evolve and adjustments may be made. Therefore, the final implementation may differ from the initial design described in this document. We will keep you informed of any significant changes and ensure they align with the project's goals and requirements.
+> ⚠️ Please note that the design presented here serves as a foundational starting point. As the development process progresses, certain details may evolve and adjustments may be made. Therefore, the final implementation may differ from the initial design described in this document.
