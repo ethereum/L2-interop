@@ -2,7 +2,8 @@
 
 # Intro
 
-Minting `l2.eth` (details below) will give ERC-7828 “Interoperable Addresses” a permanent home inside ENS via a future custom wildcard resolver. Today’s discussions concerns only the minting and transfer of the name.
+Minting `l2.eth` (details below) will give ERC-7828 “Interoperable Addresses” a permanent home inside ENS via a future custom wildcard resolver. This proposal has already been submitted as a temperature check to the ENS DAO and received a positive signal from the community.
+
 
 # Context
 
@@ -39,6 +40,6 @@ Third, the wildcard resolver planned for `*.l2.eth` keeps scaling costs tiny.  T
 # Next Steps
 
 1. Set up the multisig: Gather DAO feedback on signer selection and threshold (details to be finalized before the executable vote).
-2. Executable proposal: Specify the exact on-chain calls for the chosen registration path and list the multisig signers.
+2. Executable proposal: Specify the exact on-chain calls for the chosen registration path and list the multisig signers as per the [executable-proposal-template](https://github.com/ensdomains/docs/blob/master/src/public/governance/executable-proposal-template.md). Awaiting [new controller](https://github.com/ensdomains/ens-contracts/pull/438) to be production ready and approved by ENS DAO.
 3. Execution: Register `l2.eth`, then confirm that the multisig holds the name.
 4. Resolver development: A wildcard resolver, specified in the [L2Resolver spec](specs/addresses/L2Resolver.md), that resolves ENS chain names to their corresponding EIP-7930 chain identifiers, and vice versa.
