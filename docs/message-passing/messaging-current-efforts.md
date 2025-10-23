@@ -1,10 +1,44 @@
+> [!NOTE] 
+> After several proposals, the community has begun to converge on **ERC-7786** as a unifying standard for cross-chain messaging. Its modular and chain-agnostic design positions it as a solid foundation for the future of interoperability.
+
 # Message Passing
 
 As the Ethereum landscape evolves, passing valid messages between different L2s, L3s, and LXs becomes fundamental for interconnecting user activity across chains, moving liquidity, and unlocking multi-domain applications, among other reasons. The desire for standardized APIs has motivated the creation of various proposals, from simple interfaces to those that aim to accommodate recent (thus common) rollup flows.
 
-## Existing Messaging Standards
+## ERC-7786: The Standardized Messaging Gateway
 
-These standards are meant to work between any blockchain. They are agnostic to how messages are verified or delivered, including any off-chain mechanisms.
+[ERC-7786](https://github.com/ethereum/ERCs/pull/673) proposes a modular and extensible interface for cross-chain messaging. Its design strikes a balance between a minimal interface and the extensibility needed to accommodate the diversity of existing bridge protocols.
+
+### Key Components of ERC-7786
+
+- **Gateways**: The standard defines an `IERC7786GatewaySource` for sending messages from the source chain and expects the receiver on the destination chain to implement an `IERC7786Receiver` interface to process them securely.
+- **Agnostic Identifiers**: It uses CAIP-10 to identify the sender and receiver, ensuring compatibility with ecosystems beyond EVM.
+- **Extensible Attributes**: One of its most powerful features is the `attributes` system. This is additional data that can be attached to a message to use bridge-specific functionalities, such as specifying gas limits, requesting post-processing, or defining other custom logic, without altering the main interface.
+- **Post-Processing Flow**: The standard acknowledges that sending a message may require additional steps after the initial call (like paying for gas on the destination chain). This "post-processing" can be managed flexibly, either by a relayer or by a specific actor defined in the attributes.
+
+### Why Is It Gaining Traction?
+
+The main reason for its adoption is its modularity. Instead of imposing a single model, ERC-7786 acts as an abstraction layer that allows developers to interact with different messaging protocols (native to rollups, external ones like LayerZero, or future ones) through a single interface. This reduces vendor lock-in and fosters a more composable and resilient interoperability ecosystem.
+
+```mermaid
+sequenceDiagram
+    participant User
+    participant GatewaySource as IERC7786GatewaySource (Chain A)
+    participant Relayer as Relayer / Post‑Processing
+    participant GatewayDestination as Destination Gateway (Chain B)
+    participant Receiver as IERC7786Receiver
+
+    User->>GatewaySource: sendMessage(destinationChain, receiver, payload, attributes)
+    GatewaySource->>GatewaySource: emit MessagePosted(outboxId, sender, receiver, payload, value, attributes)
+    Note over Relayer: The post-processing or <br/> relaying step triggers eventually
+    Relayer->>GatewayDestination: preReceive(parameters) "This is ONLY illustrative"
+    GatewayDestination->>GatewayDestination: verify proof & parse message
+    GatewayDestination->>Receiver: executeMessage(messageId, sourceChain, sender, payload, attributes)
+    Receiver-->>GatewayDestination: returns IERC7786Receiver.executeMessage.selector
+```
+## Other Proposed Messaging Standards
+
+These standards are meant to work between any blockchain and represent earlier or alternative efforts to standardize messaging. They are agnostic to how messages are verified or delivered, including any off-chain mechanisms.
 
 ### ERC-6170: Cross-Chain Messaging Interface
 
@@ -27,28 +61,6 @@ sequenceDiagram
     ContractB->>ContractB: emit MessageReceived(from, fromChainId, message)
     ContractB->>Recipient: Deliver message contents
 ```
-
-### ERC-7786: Cross-Chain Messaging Gateway
-
-[ERC-7786](https://github.com/ethereum/ERCs/pull/673) also proposes a minimal interface to send (`sendMessage`) and receive (`executeMessage`) arbitrary messages. It contains extensible attributes that can be adapted to multiple bridging protocol models, as it is intented to be proof-agnostic. It leverages CAIP-10 for sender/receiver addresses, and introduces an optional post-proccessing step for any custom logic, as well as a explicit definitions of roles for sending and executing messages.
-
-```mermaid
-sequenceDiagram
-    participant User
-    participant GatewaySource as IERC7786GatewaySource (Chain A)
-    participant Relayer as Relayer / Post‑Processing
-    participant GatewayDestination as Destination Gateway (Chain B)
-    participant Receiver as IERC7786Receiver
-
-    User->>GatewaySource: sendMessage(destinationChain, receiver, payload, attributes)
-    GatewaySource->>GatewaySource: emit MessagePosted(outboxId, sender, receiver, payload, value, attributes)
-    Note over Relayer: The post-processing or <br/> relaying step triggers eventually
-    Relayer->>GatewayDestination: preReceive(parameters) "This is ONLY illustrative"
-    GatewayDestination->>GatewayDestination: verify proof & parse message
-    GatewayDestination->>Receiver: executeMessage(messageId, sourceChain, sender, payload, attributes)
-    Receiver-->>GatewayDestination: returns IERC7786Receiver.executeMessage.selector
-```
-
 ### ERC-7841: Cross-chain Message Format and Mailbox
 
 [ERC-7841](https://github.com/ethereum/ERCs/pull/766), similarly to ERC-7786, defines a standard message format (metadata + payload). Also conceives the existence of the Mailbox contract for storing/retrieving messages, allowing either push- or pull-based bridging (see `execute` implementation example), so the message might sit "in the mailbox" until bridging is proven or invoked.
@@ -279,18 +291,18 @@ sequenceDiagram
 
 The existing approaches are divided into proposed standards and actual implementations. While standards aim to be agnostic and broad to cover a wide range of use cases, actual implementations serve as references for what is included and how it is implemented.
 
-| **Standard (or protocol)** | **ERC-6170** | **ERC-7786** | **ERC-7841** | **ERC-7854** | **CCTP V1** | **CCTP V2** | **LayerZero** | **OP Stack L1/L2** | **OP Stack L2/L2** | **Linea** | **Scroll** |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| **What is it? (*Status*)** | Standard (Draft, merged on Dec 25, 2022) | Standard (Draft, merged on Dec 4, 2024) | Standard (Draft, open) | Standard (Draft, open) | Protocol (Implemented) | Protocol (Implemented) | Protocol (Implemented) | Protocol (Implemented) | Protocol (Devnet) | Protocol (Implemented) | Protocol (Implemented) |
+| **Standard (or protocol)** | **ERC-7786** | **ERC-6170** | **ERC-7841** | **ERC-7854** | **CCTP V1** | **CCTP V2** | **LayerZero** | **OP Stack L1/L2** | **OP Stack L2/L2** | **Linea** | **Scroll** |
+| --- |--- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| **What is it? (*Status*)** | Standard (Draft, merged on Dec 4, 2024) | Standard (Draft, merged on Dec 25, 2022) | Standard (Draft, open) | Standard (Draft, open) | Protocol (Implemented) | Protocol (Implemented) | Protocol (Implemented) | Protocol (Implemented) | Protocol (Devnet) | Protocol (Implemented) | Protocol (Implemented) |
 | **Motivation / Main Use Case** | Interface for message-passing | Interface for message-passing | Interface for Interface for message-passing, focused for L2s. | Interface for message-passing, focused on Ethereum ecosystem. | Message Layer for USDC cross-chain transfers. | Message Layer for USDC cross-chain transfers. | Message Layer for any cross-chain use cases. | Message Layer leveraged from underlying rollup security model. | Message Layer leveraged from underlying rollup security model. | Message Layer leveraged from underlying rollup security model. | Message Layer leveraged from underlying rollup security model. |
-| **VM Compatibility** | Intended to be agnostic. Usage of `bytes`  | Intended to be agnostic. It uses CAIP for this purpose. | It includes a rationale on how to adapt it to virtual machines other than the EVM.| Intended to be agnostic. ISMs are modular and extensible | Multiple VMs. | Multiple VMs. | Multiple VMs. | - | - | - | - |
-| **Chain ID Format** | Custom `bytes`. Proposes each chain have a unique byte string ID (e.g. encode “ETH” or “ARB”.) | CAIP-2 (via CAIP-10). Used as `string` (e.g., `"eip155:1"` for Ethereum mainnet). This avoids relying on numeric IDs like EIP-155 exclusively. | Custom `uint32`. Expected to be EIP-155 or context-based. | Custom `uint32`. Expected to be EIP-155 or context-based. | Custom `uint32` chain identifiers called *domains*. | Custom `uint32` chain identifiers called *Endpoint IDs*. | Custom `uint32` chain identifiers defined as *Endpoint IDs*. | Not included, since it is implicit. | `uint256` to be EIP-155 based. | Not included, since it is implicit. | Not included, since it is implicit. |
-| **Main Entry Functions** | `sendMessage` and `receiveMessage`. | `sendMessage` via gateway, `executeMessage` on receiver. | `populateInbox()` and `recv()` on `Mailbox`. | `dispatch` and `process` on `Mailbox`, `handle` on recipient. | `sendMessage` and `receiveMessage`.. | `sendMessage` and `receiveMessage`. | `send` and `lzReceive`.  | `sendMessage` and `relayMessage`. | `sendMessage` and `relayMessage`. | `sendMessage` and `claimMessage`. | `sendMessage` and `relayMessage`. |
-| **Event Emissions** | `MessageSent`/`MessageReceived` | `MessagePosted` | Not defined | Not defined | `MessageSent`/`MessageReceived` | `MessageSent`/`MessageReceived`  | `PacketSent`/`PacketDelivered` | `SentMessage`/`RelayedMessage`  | `SentMessage`/`RelayedMessage` | `MessageSent`/`MessageClaimed`  | `SentMessage`/`RelayedMessage` |
-| **Extra Data Format** | Through raw `bytes`. | In `bytes[] attributes`. Extensible (e.g. custom bridging or gas instructions). | Via struct: `{ Message metadata, payload }`. | Via struct: `Message { version, nonce, origin, sender, destination, recipient, body }` | Through raw `bytes`. | Through raw `bytes`. | Payload + adapter params in `bytes`. No standard format, user-defined. | Through raw `bytes`. | Through raw `bytes`. | Through raw `bytes`. | Through raw `bytes`. |
+| **VM Compatibility** | Intended to be agnostic. It uses CAIP for this purpose. | Intended to be agnostic. Usage of `bytes`  | It includes a rationale on how to adapt it to virtual machines other than the EVM.| Intended to be agnostic. ISMs are modular and extensible | Multiple VMs. | Multiple VMs. | Multiple VMs. | - | - | - | - |
+| **Chain ID Format** | CAIP-2 (via CAIP-10). Used as `string` (e.g., `"eip155:1"` for Ethereum mainnet). This avoids relying on numeric IDs like EIP-155 exclusively. | Custom `bytes`. Proposes each chain have a unique byte string ID (e.g. encode “ETH” or “ARB”.) | Custom `uint32`. Expected to be EIP-155 or context-based. | Custom `uint32`. Expected to be EIP-155 or context-based. | Custom `uint32` chain identifiers called *domains*. | Custom `uint32` chain identifiers called *Endpoint IDs*. | Custom `uint32` chain identifiers defined as *Endpoint IDs*. | Not included, since it is implicit. | `uint256` to be EIP-155 based. | Not included, since it is implicit. | Not included, since it is implicit. |
+| **Main Entry Functions** | `sendMessage` via gateway, `executeMessage` on receiver. | `sendMessage` and `receiveMessage`. | `populateInbox()` and `recv()` on `Mailbox`. | `dispatch` and `process` on `Mailbox`, `handle` on recipient. | `sendMessage` and `receiveMessage`.. | `sendMessage` and `receiveMessage`. | `send` and `lzReceive`.  | `sendMessage` and `relayMessage`. | `sendMessage` and `relayMessage`. | `sendMessage` and `claimMessage`. | `sendMessage` and `relayMessage`. |
+| **Event Emissions** | `MessagePosted` | `MessageSent`/`MessageReceived` | Not defined | Not defined | `MessageSent`/`MessageReceived` | `MessageSent`/`MessageReceived`  | `PacketSent`/`PacketDelivered` | `SentMessage`/`RelayedMessage`  | `SentMessage`/`RelayedMessage` | `MessageSent`/`MessageClaimed`  | `SentMessage`/`RelayedMessage` |
+| **Extra Data Format** | In `bytes[] attributes`. Extensible (e.g. custom bridging or gas instructions). | Through raw `bytes`. | Via struct: `{ Message metadata, payload }`. | Via struct: `Message { version, nonce, origin, sender, destination, recipient, body }` | Through raw `bytes`. | Through raw `bytes`. | Payload + adapter params in `bytes`. No standard format, user-defined. | Through raw `bytes`. | Through raw `bytes`. | Through raw `bytes`. | Through raw `bytes`. |
 | **Message Validation/Safety** | Not addressed but pluggable. | Not addressed but pluggable. | Done before `recv` through relayer’s input in `populateInbox` via `aux` field or another source. | Defined via an ISM contract. | Attestation provided by Circle, used as an input during `receiveMessage`. | Attestation provided by Circle, used as an input during `receiveMessage`. | verify function is contained in the same contract, authenticated. | L1→L2: Validated by consensus. L2→L1: Validated by the proof system, authenticated. | Validated by consensus, authenticated. | L1→L2: Validated by consensus. L2→L1: Validated by the proof system. | L1→L2: Validated by consensus. L2→L1: Validated by the proof system. |
 | **Message Retries, Cancellations, Replacement or Claimback** | Not defined. | Not defined. | Not defined. Separate verification method might allow it. | Not defined. ISM might allow it. | Messages can be replaced. This is done as a separate implementation on top of `sendMessage`. | Not defined. | Messages can be retried. Also they might be erased in destination by calling a separate `clear` function. | Messages can be retried. | No explicit mechanisms. | No explicit mechanisms. | Messages can be claimed back if they are not picked to process in destination. |
-| **Gas/Fee Handling** | None built-in. Payable function + `data_` field can hold fee info. | Payable. `value` in event used for fees, plus flexible `attributes`. There is a value field. | None built-in. | Fee mechanism via its post-dispatch hooks (e.g. through `INTERCHAIN_GAS_PAYMASTER`) and add a quote function. | No fees. | No direct fees but hooks can include a payment logic. | Fee pay out in origin in `send`. | Deposits include L2 gas. Withdrawals cost are covered by who call `relayMessage`. | Not defined. | User may leave a tip, optional. | Deposits include L2 gas. Withdrawals cost are covered by who call `relayMessage`. |
-| **Bundling** | Single message. | Single message, but attributes can define some bundling logic. | `sessionId` can group messages. No atomic multi-call. | Yes, possible bundling through ISM validation to orchestrate it. | No bundling. | Yes, limited to “mint + 1 contract call”. | Single message, but attributes can define some bundling logic. `guid`/`compose`can coordinate multiple packets. | Single call invocation. | Single call invocation. | Single call invocation. | Single call invocation. |
-| **Pull/Push Support** | Not defined (but it could given its generality) | Explicitly supports both. | Supported via separate mailbox contracts | Supported; e.g. integration with synchronous L2s like Superchain outlined. | Support both. | Support both. | Support both. | Push in deposits. Pull in withdrawals. | Support both. | Push in deposits. Pull still available. Pull in withdrawals. | Push in deposits. Pull in withdrawals. |
-| **Modularity** | Simple Interface. | Gateway + attributes give modularity open to implementers. | Modular: mailbox split by sync/async, attributes via metadata, inbox logic separate. | Highly modular: ISMs, Hooks, message structure, full plug-and-play components | Implementation attached to their use cases. | Implementation attached to their use cases. | Modular since it has core + pluggable Send/Receive libraries, DVN & Executor choice, composer for follow‑ups, all under the LayerZero definitions. | Mostly monolithic. | Mostly monolithic. | Mostly monolithic. | Mostly monolithic. |
+| **Gas/Fee Handling** | Payable. `value` in event used for fees, plus flexible `attributes`. There is a value field. | None built-in. Payable function + `data_` field can hold fee info. | None built-in. | Fee mechanism via its post-dispatch hooks (e.g. through `INTERCHAIN_GAS_PAYMASTER`) and add a quote function. | No fees. | No direct fees but hooks can include a payment logic. | Fee pay out in origin in `send`. | Deposits include L2 gas. Withdrawals cost are covered by who call `relayMessage`. | Not defined. | User may leave a tip, optional. | Deposits include L2 gas. Withdrawals cost are covered by who call `relayMessage`. |
+| **Bundling** | Single message, but attributes can define some bundling logic. | Single message. | `sessionId` can group messages. No atomic multi-call. | Yes, possible bundling through ISM validation to orchestrate it. | No bundling. | Yes, limited to “mint + 1 contract call”. | Single message, but attributes can define some bundling logic. `guid`/`compose`can coordinate multiple packets. | Single call invocation. | Single call invocation. | Single call invocation. | Single call invocation. |
+| **Pull/Push Support** | Explicitly supports both. | Not defined (but it could given its generality) | Supported via separate mailbox contracts | Supported; e.g. integration with synchronous L2s like Superchain outlined. | Support both. | Support both. | Support both. | Push in deposits. Pull in withdrawals. | Support both. | Push in deposits. Pull still available. Pull in withdrawals. | Push in deposits. Pull in withdrawals. |
+| **Modularity** | Gateway + attributes give modularity open to implementers. | Simple Interface. | Modular: mailbox split by sync/async, attributes via metadata, inbox logic separate. | Highly modular: ISMs, Hooks, message structure, full plug-and-play components | Implementation attached to their use cases. | Implementation attached to their use cases. | Modular since it has core + pluggable Send/Receive libraries, DVN & Executor choice, composer for follow‑ups, all under the LayerZero definitions. | Mostly monolithic. | Mostly monolithic. | Mostly monolithic. | Mostly monolithic. |
